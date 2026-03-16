@@ -766,9 +766,17 @@ img { max-width: 100%; height: auto; }
 /* ══════════════════════
    CHAT AREA
    ══════════════════════ */
-.chat-area { display: flex; flex-direction: column; background: var(--bg-primary); }
+.chat-area {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  min-height: 0;
+  overflow: hidden;
+}
 .chat-messages {
-  flex: 1; overflow-y: auto;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
   padding: 28px 36px;
   scroll-behavior: smooth;
 }
