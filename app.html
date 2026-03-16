@@ -9,15 +9,16 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#3ecfb2">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📢</text></svg>">
 </head>
 <body>
 
   <!-- TOPBAR -->
   <header class="topbar" role="banner">
-    <a href="index.html" class="topbar-logo" aria-label="Voltar ao início do VozPública">
-      <div class="logo-icon logo-clean" aria-hidden="true"><img src="assets/logo.png" alt="VozPública logo" class="logo-img-sm"></div>
+    <a href="index.html" class="topbar-logo" aria-label="Voltar ao início">
+      <div class="logo-icon logo-clean" aria-hidden="true">
+        <img src="assets/logo.png" alt="VozPública" class="logo-img-sm">
+      </div>
       Voz<span>Pública</span>
     </a>
     <div class="topbar-divider" aria-hidden="true"></div>
@@ -25,44 +26,39 @@
     <div class="topbar-actions">
       <div class="status-badge" id="aiStatus" role="status" aria-live="polite">
         <div class="status-dot" aria-hidden="true"></div>
-        <span id="aiStatusText">IA Online</span>
+        <span id="aiStatusText">Base Local</span>
       </div>
       <button class="topbar-btn" id="themeToggleBtn" aria-label="Alternar tema">
-        <span class="theme-icon">🌙</span> Tema
+        <span class="theme-icon">🌙</span>
       </button>
-      <button class="topbar-btn" id="accessibilityToggle" aria-label="Abrir painel de acessibilidade" aria-expanded="false">
-        ♿ Acessibilidade
-      </button>
-      <button class="topbar-btn" id="guideBtn" aria-label="Abrir Guia do Usuário">
-        📘 Guia
-      </button>
-      <button class="topbar-btn" id="settingsBtn" aria-label="Configurações de API">
-        ⚙️ Config
-      </button>
-      <button class="topbar-btn" id="aboutBtn" aria-label="Sobre o VozPública">ℹ️ Sobre</button>
+      <button class="topbar-btn" id="accessibilityToggle" aria-label="Acessibilidade" aria-expanded="false">♿</button>
+      <button class="topbar-btn" id="guideBtn" aria-label="Guia">📘 Guia</button>
+      <button class="topbar-btn" id="settingsBtn" aria-label="Configurações">⚙️ Config</button>
+      <button class="topbar-btn" id="aboutBtn" aria-label="Sobre">ℹ️</button>
     </div>
   </header>
 
   <!-- ACCESSIBILITY PANEL -->
-  <aside class="a11y-panel" id="a11yPanel" role="dialog" aria-modal="false" aria-label="Opções de acessibilidade" aria-hidden="true">
-    <p class="a11y-title">⚙️ Opções de Acessibilidade</p>
+  <aside class="a11y-panel" id="a11yPanel" role="dialog" aria-modal="false"
+    aria-label="Acessibilidade" aria-hidden="true">
+    <p class="a11y-title">⚙️ Acessibilidade</p>
     <div class="a11y-option">
       <span class="a11y-label">Tamanho da fonte</span>
       <div class="a11y-control">
-        <button class="a11y-btn" id="fontDecrease" aria-label="Diminuir fonte">−</button>
+        <button class="a11y-btn" id="fontDecrease" aria-label="Diminuir">−</button>
         <span class="a11y-value" id="fontSizeLabel" aria-live="polite">100%</span>
-        <button class="a11y-btn" id="fontIncrease" aria-label="Aumentar fonte">+</button>
+        <button class="a11y-btn" id="fontIncrease" aria-label="Aumentar">+</button>
       </div>
     </div>
     <div class="a11y-option">
       <span class="a11y-label">Alto contraste</span>
-      <button class="toggle-switch" id="contrastToggle" role="switch" aria-checked="false" aria-label="Ativar alto contraste">
+      <button class="toggle-switch" id="contrastToggle" role="switch" aria-checked="false">
         <div class="toggle-knob"></div>
       </button>
     </div>
     <div class="a11y-option">
-      <span class="a11y-label">Leitura automática (ElevenLabs)</span>
-      <button class="toggle-switch" id="ttsToggle" role="switch" aria-checked="false" aria-label="Ativar leitura em voz alta das respostas">
+      <span class="a11y-label">Leitura automática</span>
+      <button class="toggle-switch" id="ttsToggle" role="switch" aria-checked="false">
         <div class="toggle-knob"></div>
       </button>
     </div>
@@ -82,7 +78,7 @@
             <span class="setting-hint">Grátis em <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com</a></span>
           </label>
           <div class="setting-input-row">
-            <input type="password" id="geminiKeyInput" class="setting-input" placeholder="Cole sua chave aqui..." autocomplete="off">
+            <input type="password" id="geminiKeyInput" class="setting-input" placeholder="Cole sua chave..." autocomplete="off">
             <button class="setting-save-btn" id="saveGeminiKey">Salvar</button>
           </div>
           <div class="setting-status" id="geminiStatus">❌ Não configurado — usando base local</div>
@@ -93,19 +89,17 @@
             <span class="setting-hint">Grátis em <a href="https://elevenlabs.io" target="_blank" rel="noopener">elevenlabs.io</a></span>
           </label>
           <div class="setting-input-row">
-            <input type="password" id="elevenLabsKeyInput" class="setting-input" placeholder="Cole sua chave aqui..." autocomplete="off">
+            <input type="password" id="elevenLabsKeyInput" class="setting-input" placeholder="Cole sua chave..." autocomplete="off">
             <button class="setting-save-btn" id="saveElevenLabsKey">Salvar</button>
           </div>
           <div class="setting-status" id="elevenLabsStatus">❌ Não configurado — usando voz do navegador</div>
         </div>
-        <div class="setting-note">
-          🔒 Suas chaves são salvas <strong>apenas no seu navegador</strong> (localStorage) e nunca são enviadas para servidores externos.
-        </div>
+        <div class="modal-note">🔒 Suas chaves ficam <strong>apenas no seu navegador</strong> e nunca são enviadas para servidores externos.</div>
       </div>
     </div>
   </div>
 
-  <!-- USER GUIDE MODAL -->
+  <!-- GUIDE MODAL -->
   <div class="modal-overlay" id="guideModal" aria-hidden="true">
     <div class="modal guide-modal" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
       <div class="modal-header">
@@ -117,22 +111,22 @@
           <div class="guide-card">
             <div class="guide-step">Passo 1</div>
             <h3 class="guide-card-title">Faça sua Pergunta</h3>
-            <p class="guide-card-desc">Digite ou fale sua dúvida na barra inferior. A Inteligência Artificial responderá em linguagem simples.</p>
+            <p class="guide-card-desc">Digite ou fale sua dúvida. A IA responde em linguagem simples.</p>
           </div>
           <div class="guide-card">
             <div class="guide-step">Passo 2</div>
             <h3 class="guide-card-title">Análise de Documentos</h3>
-            <p class="guide-card-desc">Precisa entender uma carta oficial ou ofício? Clique em "Analisar Documento" e envie uma foto.</p>
+            <p class="guide-card-desc">Clique em "📄 Analisar Documento" e envie uma foto de um documento oficial.</p>
           </div>
           <div class="guide-card">
             <div class="guide-step">Passo 3</div>
-            <h3 class="guide-card-title">Use Atalhos</h3>
-            <p class="guide-card-desc">Pressione <kbd>Ctrl</kbd> + <kbd>K</kbd> (ou <kbd>Cmd</kbd> + <kbd>K</kbd>) para buscar por categorias rapidamente.</p>
+            <h3 class="guide-card-title">Serviços Próximos</h3>
+            <p class="guide-card-desc">Use "📍 Serviços Próximos" para localizar CRAS, UBS, INSS perto de você.</p>
           </div>
           <div class="guide-card">
             <div class="guide-step">Dica</div>
-            <h3 class="guide-card-title">Acessibilidade Ativa</h3>
-            <p class="guide-card-desc">Se precisar, ative a Leitura Automática ou o Alto Contraste no painel de Acessibilidade no topo.</p>
+            <h3 class="guide-card-title">Histórico Automático</h3>
+            <p class="guide-card-desc">Conversas são salvas automaticamente. Acesse pelo menu lateral quando quiser.</p>
           </div>
         </div>
       </div>
@@ -141,20 +135,65 @@
 
   <!-- ABOUT MODAL -->
   <div class="modal-overlay" id="aboutModal" aria-hidden="true">
-    <div class="modal guide-modal" role="dialog" aria-modal="true" aria-labelledby="aboutTitle" style="max-width: 500px">
+    <div class="modal guide-modal" role="dialog" aria-modal="true" aria-labelledby="aboutTitle" style="max-width:480px">
       <div class="modal-header">
         <h2 id="aboutTitle" class="modal-title">ℹ️ Sobre o VozPública</h2>
         <button class="modal-close" id="aboutClose" aria-label="Fechar">&times;</button>
       </div>
       <div class="modal-body guide-body">
-        <p style="margin-bottom: 16px; color: var(--text-secondary); line-height: 1.6;">
-          O <strong>VozPública</strong> é um assistente de inteligência artificial criado para democratizar o acesso à informação sobre direitos e serviços públicos no Brasil.
+        <p style="margin-bottom:14px;color:var(--tx-2);line-height:1.65;font-size:0.88rem">
+          O <strong>VozPública</strong> é um assistente de IA para democratizar o acesso à informação sobre direitos e serviços públicos no Brasil.
         </p>
-        <p style="margin-bottom: 16px; color: var(--text-secondary); line-height: 1.6;">
-          Nossa missão é combater a burocracia, traduzindo o termos difíceis para uma linguagem simples e acessível a todos os cidadãos.
+        <p style="margin-bottom:14px;color:var(--tx-2);line-height:1.65;font-size:0.88rem">
+          <strong>v2.0</strong> — Agora com histórico persistente, geolocalização de serviços, busca por CEP via ViaCEP e dashboard expandido.
         </p>
-        <div class="modal-note">
-          As informações do VozPública são de caráter educativo. Para decisões oficiais importantes, utilize os canais oficiais do governo.
+        <div class="modal-note">Informações educativas. Para decisões oficiais, utilize os canais do governo.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GEO MODAL -->
+  <div class="modal-overlay" id="geoModal" aria-hidden="true">
+    <div class="modal geo-modal" role="dialog" aria-modal="true" aria-labelledby="geoTitle">
+      <div class="modal-header">
+        <h2 id="geoTitle" class="modal-title">📍 Serviços Públicos Próximos</h2>
+        <button class="modal-close" id="geoClose" aria-label="Fechar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="geo-intro">Encontre CRAS, UBS, INSS e Defensoria Pública perto de você usando localização ou CEP.</p>
+        <div class="geo-services-grid">
+          <button class="geo-service-btn" onclick="findNearbyService('cras')">
+            <span class="geo-service-icon">🏠</span>CRAS
+            <small style="font-size:0.65rem;font-weight:400;color:var(--tx-3)">CadÚnico · Bolsa Família</small>
+          </button>
+          <button class="geo-service-btn" onclick="findNearbyService('ubs')">
+            <span class="geo-service-icon">🏥</span>UBS / Posto SUS
+            <small style="font-size:0.65rem;font-weight:400;color:var(--tx-3)">Consultas · Vacinas</small>
+          </button>
+          <button class="geo-service-btn" onclick="findNearbyService('inss')">
+            <span class="geo-service-icon">🏛️</span>Agência INSS
+            <small style="font-size:0.65rem;font-weight:400;color:var(--tx-3)">Aposentadoria · BPC</small>
+          </button>
+          <button class="geo-service-btn" onclick="findNearbyService('crea')">
+            <span class="geo-service-icon">⚖️</span>Defensoria Pública
+            <small style="font-size:0.65rem;font-weight:400;color:var(--tx-3)">Apoio jurídico gratuito</small>
+          </button>
+        </div>
+        <p class="geo-status" id="geoStatus"></p>
+        <div class="geo-divider">ou busque pelo CEP</div>
+        <div>
+          <select id="geoServiceSelect" style="width:100%;padding:9px 12px;background:var(--bg-3);border:1px solid var(--border-dim);border-radius:var(--r-sm);color:var(--tx-1);font-family:var(--font-body);font-size:0.8rem;outline:none;margin-bottom:8px;cursor:pointer">
+            <option value="cras">CRAS</option>
+            <option value="ubs">UBS / Posto de Saúde</option>
+            <option value="inss">Agência INSS</option>
+            <option value="crea">Defensoria Pública</option>
+          </select>
+          <div class="geo-cep-row">
+            <input type="text" id="geoCepInput" class="geo-cep-input"
+              placeholder="CEP (ex: 01310-100)" maxlength="9"
+              oninput="this.value=this.value.replace(/\D/g,'').replace(/^(\d{5})(\d)/,'$1-$2').slice(0,9)">
+            <button class="geo-cep-btn" onclick="lookupCEPAndFind()">Buscar</button>
+          </div>
         </div>
       </div>
     </div>
@@ -164,55 +203,49 @@
   <div class="app-layout" role="main">
 
     <!-- SIDEBAR -->
-    <nav class="sidebar" id="sidebar" role="navigation" aria-label="Navegação do aplicativo">
+    <nav class="sidebar" id="sidebar" role="navigation" aria-label="Navegação">
       <div class="sidebar-header">
         <p class="sidebar-label">Conversas</p>
-        <button type="button" class="new-chat-btn" id="newChatBtn" aria-label="Iniciar nova conversa">
-          ✨ Nova Conversa
-        </button>
+        <button type="button" class="new-chat-btn" id="newChatBtn">✨ Nova Conversa</button>
       </div>
-      
+
       <div class="sidebar-search">
         <div class="search-wrapper">
-          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
           <input type="text" id="topicSearchInput" class="search-input" placeholder="Buscar categoria...">
           <div class="search-shortcut"><kbd>⌘</kbd><kbd>K</kbd></div>
         </div>
       </div>
 
       <div class="topics-section">
+
+        <!-- Categories -->
         <div class="topic-group" id="topicGroupList">
           <p class="topic-group-title">Categorias</p>
-          <button class="topic-btn" onclick="startTopic('inss')">
-            <span class="topic-icon" aria-hidden="true">🏛️</span> INSS &amp; Previdência
-          </button>
-          <button class="topic-btn" onclick="startTopic('saude')">
-            <span class="topic-icon" aria-hidden="true">🏥</span> Saúde Pública
-          </button>
-          <button class="topic-btn" onclick="startTopic('bolsa')">
-            <span class="topic-icon" aria-hidden="true">💚</span> Bolsa Família
-          </button>
-          <button class="topic-btn" onclick="startTopic('trabalho')">
-            <span class="topic-icon" aria-hidden="true">⚖️</span> Direitos Trabalhistas
-          </button>
-          <button class="topic-btn" onclick="startTopic('educacao')">
-            <span class="topic-icon" aria-hidden="true">🎓</span> Educação &amp; Bolsas
-          </button>
-          <button class="topic-btn" onclick="startTopic('habitacao')">
-            <span class="topic-icon" aria-hidden="true">🏘️</span> Habitação &amp; Moradia
-          </button>
-          <button class="topic-btn" onclick="startTopic('documentos')">
-            <span class="topic-icon" aria-hidden="true">📑</span> Documentos &amp; Registros
-          </button>
-          <button class="topic-btn" onclick="startTopic('idoso')">
-            <span class="topic-icon" aria-hidden="true">👴</span> Direitos do Idoso
-          </button>
+          <button class="topic-btn" onclick="startTopic('inss')"><span class="topic-icon">🏛️</span> INSS &amp; Previdência</button>
+          <button class="topic-btn" onclick="startTopic('saude')"><span class="topic-icon">🏥</span> Saúde Pública</button>
+          <button class="topic-btn" onclick="startTopic('bolsa')"><span class="topic-icon">💚</span> Bolsa Família</button>
+          <button class="topic-btn" onclick="startTopic('trabalho')"><span class="topic-icon">⚖️</span> Direitos Trabalhistas</button>
+          <button class="topic-btn" onclick="startTopic('educacao')"><span class="topic-icon">🎓</span> Educação &amp; Bolsas</button>
+          <button class="topic-btn" onclick="startTopic('habitacao')"><span class="topic-icon">🏘️</span> Habitação &amp; Moradia</button>
+          <button class="topic-btn" onclick="startTopic('documentos')"><span class="topic-icon">📑</span> Documentos &amp; Registros</button>
+          <button class="topic-btn" onclick="startTopic('idoso')"><span class="topic-icon">👴</span> Direitos do Idoso</button>
         </div>
 
-        <!-- IMPACT DASHBOARD -->
+        <!-- Conversation History -->
         <div class="topic-group">
-          <p class="topic-group-title">📊 Impacto</p>
-          <div class="impact-mini-dashboard" id="impactDashboard">
+          <p class="topic-group-title">Histórico</p>
+          <div class="history-list" id="historyList">
+            <p class="history-empty">Nenhuma conversa salva ainda.</p>
+          </div>
+        </div>
+
+        <!-- Impact Dashboard -->
+        <div class="topic-group">
+          <p class="topic-group-title">📊 Impacto da sessão</p>
+          <div class="impact-mini-dashboard">
             <div class="mini-stat">
               <span class="mini-stat-value" id="totalQueries">0</span>
               <span class="mini-stat-label">Consultas realizadas</span>
@@ -225,12 +258,22 @@
               <span class="mini-stat-value" id="docsAnalyzed">0</span>
               <span class="mini-stat-label">Documentos analisados</span>
             </div>
+            <div class="mini-stat">
+              <span class="mini-stat-value" id="sessionTime">—</span>
+              <span class="mini-stat-label">Tempo na sessão</span>
+            </div>
           </div>
+          <div class="dashboard-categories" id="categoryBars" style="margin-top:10px"></div>
         </div>
+
       </div>
+
       <div class="sidebar-footer">
         <div class="access-controls">
-          <button class="access-control-btn" id="docAnalyzerBtn" onclick="toggleDocAnalyzer()">
+          <button class="access-control-btn geo-btn" id="geoSidebarBtn" onclick="openGeoModal()">
+            📍 Serviços Próximos
+          </button>
+          <button class="access-control-btn" onclick="toggleDocAnalyzer()">
             📄 Analisar Documento
           </button>
           <button class="access-control-btn" onclick="setLanguage('simples')">
@@ -241,36 +284,34 @@
     </nav>
 
     <!-- CHAT AREA -->
-    <section class="chat-area" aria-label="Área de chat com VozPública">
-      <div class="chat-messages" id="chatMessages" role="log" aria-live="polite" aria-label="Mensagens da conversa">
+    <section class="chat-area" aria-label="Chat">
+      <div class="chat-messages" id="chatMessages" role="log" aria-live="polite">
 
         <!-- WELCOME SCREEN -->
         <div class="welcome-screen" id="welcomeScreen">
-          <div class="welcome-icon" role="img" aria-label="VozPública">📢</div>
+          <div class="welcome-icon">📢</div>
           <h1 class="welcome-title">Olá! Sou o <span class="gradient-text">VozPública</span></h1>
-          <p class="welcome-subtitle">
-            Estou aqui para te ajudar a entender seus direitos, acessar serviços públicos e navegar a burocracia brasileira. Como posso te ajudar hoje?
-          </p>
-          <div class="quick-grid" role="list" aria-label="Tópicos frequentes">
+          <p class="welcome-subtitle">Estou aqui para te ajudar a entender seus direitos, acessar serviços públicos e navegar a burocracia brasileira.</p>
+          <div class="quick-grid" role="list">
             <button class="quick-card" onclick="startTopic('inss')" role="listitem">
-              <span class="quick-card-icon" aria-hidden="true">🏛️</span>
+              <span class="quick-card-icon">🏛️</span>
               <span class="quick-card-title">Aposentadoria &amp; INSS</span>
-              <span class="quick-card-desc">Saiba quando pode se aposentar e como solicitar</span>
+              <span class="quick-card-desc">Saiba quando e como se aposentar</span>
             </button>
             <button class="quick-card" onclick="startTopic('bolsa')" role="listitem">
-              <span class="quick-card-icon" aria-hidden="true">💚</span>
+              <span class="quick-card-icon">💚</span>
               <span class="quick-card-title">Bolsa Família</span>
-              <span class="quick-card-desc">Descubra se você tem direito ao benefício</span>
+              <span class="quick-card-desc">Descubra se você tem direito</span>
             </button>
             <button class="quick-card" onclick="startTopic('saude')" role="listitem">
-              <span class="quick-card-icon" aria-hidden="true">🏥</span>
-              <span class="quick-card-title">Saúde Pública</span>
-              <span class="quick-card-desc">Seus direitos no SUS e como acessar</span>
+              <span class="quick-card-icon">🏥</span>
+              <span class="quick-card-title">Saúde Pública (SUS)</span>
+              <span class="quick-card-desc">Seus direitos e como acessar</span>
             </button>
-            <button class="quick-card" onclick="toggleDocAnalyzer()" role="listitem">
-              <span class="quick-card-icon" aria-hidden="true">📄</span>
-              <span class="quick-card-title">Analisar Documento</span>
-              <span class="quick-card-desc">Envie uma foto de documento e receba explicação simples</span>
+            <button class="quick-card" onclick="openGeoModal()" role="listitem">
+              <span class="quick-card-icon">📍</span>
+              <span class="quick-card-title">Serviços Próximos</span>
+              <span class="quick-card-desc">Encontre CRAS, UBS e INSS perto de você</span>
             </button>
           </div>
         </div>
@@ -280,17 +321,17 @@
           <div class="doc-analyzer-card">
             <div class="doc-analyzer-header">
               <span>📄 Analisador de Documentos</span>
-              <button class="doc-close" onclick="toggleDocAnalyzer()" aria-label="Fechar analisador">&times;</button>
+              <button class="doc-close" onclick="toggleDocAnalyzer()">&times;</button>
             </div>
-            <div class="doc-drop-zone" id="dropZone" role="button" tabindex="0" aria-label="Clique ou arraste um documento para analisar">
+            <div class="doc-drop-zone" id="dropZone" role="button" tabindex="0">
               <div class="doc-drop-icon">📎</div>
-              <p class="doc-drop-text">Arraste uma <strong>foto ou imagem</strong> de um documento governamental aqui</p>
-              <p class="doc-drop-hint">ou clique para selecionar • JPG, PNG, WebP, PDF • máx 10MB</p>
-              <input type="file" id="docFileInput" accept="image/*,.pdf" style="display:none" aria-label="Selecionar arquivo">
+              <p class="doc-drop-text">Arraste uma <strong>foto de documento</strong> governamental aqui</p>
+              <p class="doc-drop-hint">ou clique · JPG, PNG, WebP, PDF · máx 10MB</p>
+              <input type="file" id="docFileInput" accept="image/*,.pdf" style="display:none">
             </div>
             <div class="doc-preview" id="docPreview" style="display:none">
-              <img id="docPreviewImg" alt="Preview do documento" src="">
-              <button class="doc-analyze-btn" id="analyzeBtn" onclick="analyzeUploadedDoc()">🔍 Analisar com IA</button>
+              <img id="docPreviewImg" alt="Preview" src="">
+              <button class="doc-analyze-btn" onclick="analyzeUploadedDoc()">🔍 Analisar com IA</button>
             </div>
           </div>
         </div>
@@ -298,75 +339,75 @@
       </div>
 
       <!-- INPUT AREA -->
-      <div class="input-area" role="form" aria-label="Enviar mensagem para o VozPública">
+      <div class="input-area" role="form">
         <div class="input-wrapper">
-          <textarea
-            id="messageInput"
-            placeholder="Digite sua dúvida aqui... ex: 'Tenho direito ao BPC?' ou 'Como emitir minha certidão de nascimento?'"
-            rows="1"
-            aria-label="Campo de texto para sua pergunta"
-          ></textarea>
+          <textarea id="messageInput"
+            placeholder="Digite sua dúvida... ou cole um CEP para localizar serviços próximos"
+            rows="1" aria-label="Sua pergunta"></textarea>
           <div class="input-actions">
-            <button class="input-btn" id="voiceMsgBtn" title="Entrada por voz" aria-label="Ativar entrada por voz">🎤</button>
-            <button class="input-btn send-btn" id="sendBtn" title="Enviar mensagem" aria-label="Enviar mensagem" disabled>
-              ↑
-            </button>
+            <button class="input-btn" id="voiceMsgBtn" aria-label="Voz">🎤</button>
+            <button class="input-btn send-btn" id="sendBtn" aria-label="Enviar" disabled>↑</button>
           </div>
         </div>
         <div class="input-hint">
-          <span>💡 Pode perguntar em linguagem simples</span>
+          <span>💡 Linguagem simples · detecta CEP automaticamente</span>
           <span><kbd>Enter</kbd> enviar · <kbd>Shift+Enter</kbd> nova linha</span>
         </div>
       </div>
     </section>
 
     <!-- RIGHT PANEL -->
-    <aside class="right-panel" aria-label="Serviços e links rápidos">
+    <aside class="right-panel" aria-label="Links rápidos">
       <div class="right-panel-header">
-        <p class="right-panel-title">🔗 Serviços Relacionados</p>
-        <p class="right-panel-sub">Links diretos para portais oficiais</p>
+        <p class="right-panel-title">🔗 Portais Oficiais</p>
+        <p class="right-panel-sub">Links diretos para serviços do governo</p>
       </div>
-      <div class="service-list" role="list" aria-label="Lista de serviços públicos">
-        <a href="https://meu.inss.gov.br" target="_blank" rel="noopener" class="service-item" role="listitem">
-          <span class="service-icon" aria-hidden="true">🏛️</span>
-          <div class="service-info"><div class="service-name">Meu INSS</div><div class="service-desc">Aposentadoria, benefícios, extratos</div></div>
-          <span class="service-arrow" aria-hidden="true">→</span>
+      <div class="service-list" role="list">
+        <a href="https://meu.inss.gov.br" target="_blank" rel="noopener" class="service-item">
+          <span class="service-icon">🏛️</span>
+          <div class="service-info"><div class="service-name">Meu INSS</div><div class="service-desc">Aposentadoria, benefícios</div></div>
+          <span class="service-arrow">→</span>
         </a>
-        <a href="https://www.gov.br/cidadania/pt-br/acoes-e-programas/bolsa-familia" target="_blank" rel="noopener" class="service-item" role="listitem">
-          <span class="service-icon" aria-hidden="true">💚</span>
-          <div class="service-info"><div class="service-name">Bolsa Família</div><div class="service-desc">Cadastro, parcelas, requisitos</div></div>
-          <span class="service-arrow" aria-hidden="true">→</span>
+        <a href="https://www.gov.br/cidadania/pt-br/acoes-e-programas/bolsa-familia" target="_blank" rel="noopener" class="service-item">
+          <span class="service-icon">💚</span>
+          <div class="service-info"><div class="service-name">Bolsa Família</div><div class="service-desc">Cadastro, parcelas</div></div>
+          <span class="service-arrow">→</span>
         </a>
-        <a href="https://sisu.mec.gov.br" target="_blank" rel="noopener" class="service-item" role="listitem">
-          <span class="service-icon" aria-hidden="true">🎓</span>
-          <div class="service-info"><div class="service-name">SISU / PROUNI</div><div class="service-desc">Bolsas e vagas universitárias</div></div>
-          <span class="service-arrow" aria-hidden="true">→</span>
+        <a href="https://sisu.mec.gov.br" target="_blank" rel="noopener" class="service-item">
+          <span class="service-icon">🎓</span>
+          <div class="service-info"><div class="service-name">SISU / PROUNI</div><div class="service-desc">Bolsas universitárias</div></div>
+          <span class="service-arrow">→</span>
         </a>
-        <a href="https://www.gov.br/esocial" target="_blank" rel="noopener" class="service-item" role="listitem">
-          <span class="service-icon" aria-hidden="true">⚖️</span>
-          <div class="service-info"><div class="service-name">eSocial / FGTS</div><div class="service-desc">Extrato, saques, regularização</div></div>
-          <span class="service-arrow" aria-hidden="true">→</span>
+        <a href="https://www.gov.br/esocial" target="_blank" rel="noopener" class="service-item">
+          <span class="service-icon">⚖️</span>
+          <div class="service-info"><div class="service-name">eSocial / FGTS</div><div class="service-desc">Extrato, saques</div></div>
+          <span class="service-arrow">→</span>
         </a>
-        <a href="https://www.gov.br/saude" target="_blank" rel="noopener" class="service-item" role="listitem">
-          <span class="service-icon" aria-hidden="true">🏥</span>
-          <div class="service-info"><div class="service-name">SUS Digital</div><div class="service-desc">Cartão SUS, agendamentos, vacinas</div></div>
-          <span class="service-arrow" aria-hidden="true">→</span>
+        <a href="https://www.gov.br/saude" target="_blank" rel="noopener" class="service-item">
+          <span class="service-icon">🏥</span>
+          <div class="service-info"><div class="service-name">SUS Digital</div><div class="service-desc">Cartão SUS, agendamentos</div></div>
+          <span class="service-arrow">→</span>
         </a>
-        <a href="https://www.gov.br/pt-br/servicos/emitir-segunda-via-de-cpf" target="_blank" rel="noopener" class="service-item" role="listitem">
-          <span class="service-icon" aria-hidden="true">📑</span>
-          <div class="service-info"><div class="service-name">CPF / Documentos</div><div class="service-desc">Regularizar, emitir, atualizar</div></div>
-          <span class="service-arrow" aria-hidden="true">→</span>
+        <a href="https://www.gov.br/pt-br/servicos/emitir-segunda-via-de-cpf" target="_blank" rel="noopener" class="service-item">
+          <span class="service-icon">📑</span>
+          <div class="service-info"><div class="service-name">CPF / Documentos</div><div class="service-desc">Regularizar, emitir</div></div>
+          <span class="service-arrow">→</span>
         </a>
-        <a href="https://www.gov.br/previdencia/pt-br/assuntos/bpc-loas" target="_blank" rel="noopener" class="service-item" role="listitem">
-          <span class="service-icon" aria-hidden="true">👴</span>
-          <div class="service-info"><div class="service-name">BPC / LOAS</div><div class="service-desc">Benefício para idosos e PcD</div></div>
-          <span class="service-arrow" aria-hidden="true">→</span>
+        <a href="https://www.gov.br/previdencia/pt-br/assuntos/bpc-loas" target="_blank" rel="noopener" class="service-item">
+          <span class="service-icon">👴</span>
+          <div class="service-info"><div class="service-name">BPC / LOAS</div><div class="service-desc">Benefício idosos e PcD</div></div>
+          <span class="service-arrow">→</span>
+        </a>
+        <a href="https://cadunico.dataprev.gov.br" target="_blank" rel="noopener" class="service-item">
+          <span class="service-icon">📋</span>
+          <div class="service-info"><div class="service-name">CadÚnico</div><div class="service-desc">Verificar e atualizar</div></div>
+          <span class="service-arrow">→</span>
         </a>
       </div>
       <div class="right-panel-footer">
         <p class="disclaimer">
-          <span class="disclaimer-icon" aria-hidden="true">ℹ️</span>
-          <span>As informações do VozPública são educativas. Para decisões importantes, consulte um profissional ou órgão oficial.</span>
+          <span class="disclaimer-icon">ℹ️</span>
+          <span>Informações educativas. Para decisões importantes, consulte órgãos oficiais.</span>
         </p>
       </div>
     </aside>
@@ -375,13 +416,11 @@
 
   <script src="js/ai.js"></script>
   <script src="js/analyzer.js"></script>
+  <script src="js/geo.js"></script>
   <script src="js/app.js"></script>
   <script>
-    // Register Service Worker
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js')
-        .then(() => console.log('SW registered'))
-        .catch(err => console.log('SW error:', err));
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
   </script>
 </body>
