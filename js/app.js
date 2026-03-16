@@ -1,13 +1,15 @@
 /* ==========================================
-   VozPública — App Engine (app.js)
-   Chatbot com base de conhecimento de
-   direitos cívicos brasileiros + Gemini AI
+   VozPública — App Engine v2 (app.js)
+   + Histórico persistente
+   + Integração geolocalização
+   + CEP automático via ViaCEP
+   + Dashboard com gráficos de tópicos
    ========================================== */
 
 'use strict';
 
 // ══════════════════════════════════════════════
-// KNOWLEDGE BASE — Fallback when offline / no API key
+// KNOWLEDGE BASE — Fallback offline / sem chave
 // ══════════════════════════════════════════════
 const KB = {
   inss: {
@@ -15,7 +17,6 @@ const KB = {
     text: `<strong>📋 Tipos de Aposentadoria (após Reforma 2019):</strong><br><br>
 <ul>
   <li>🔸 <strong>Por idade:</strong> Mulher 62 anos + 15 anos contribuição | Homem 65 anos + 20 anos contribuição</li>
-  <li>🔸 <strong>Por tempo de contribuição:</strong> Extinta para novos segurados — regras de transição aplicáveis</li>
   <li>🔸 <strong>Especial:</strong> Para quem trabalhou exposto a agentes nocivos (15/20/25 anos)</li>
   <li>🔸 <strong>Por invalidez:</strong> Quando há incapacidade permanente para o trabalho</li>
   <li>🔸 <strong>Rural:</strong> Mulher 55 anos | Homem 60 anos + comprovação de atividade rural</li>
@@ -23,29 +24,29 @@ const KB = {
 <strong>📞 Como solicitar:</strong><br>
 <ul>
   <li>✅ Site ou app <strong>Meu INSS</strong> (meu.inss.gov.br)</li>
-  <li>✅ Telefone gratuito: <strong>135</strong> (2ª a sábado, 7h às 22h)</li>
-  <li>✅ Agendar atendimento presencial na agência INSS</li>
+  <li>✅ Telefone gratuito: <strong>135</strong> (2ª a sábado, 7h–22h)</li>
+  <li>✅ Agência INSS presencialmente</li>
 </ul><br>
-<strong>📄 Documentos necessários:</strong> RG, CPF, carteiras de trabalho, contracheques, comprovante de residência.`,
+<strong>📄 Documentos:</strong> RG, CPF, carteiras de trabalho, contracheques, comprovante de residência.`,
     chips: ['Bolsa Família', 'Saúde Pública', 'Direitos Trabalhistas'],
     sources: ['meu.inss.gov.br', 'Telefone 135']
   },
   bolsa: {
     title: '💚 Bolsa Família',
     text: `<strong>📋 O que é o Bolsa Família?</strong><br><br>
-Programa de transferência de renda para famílias em situação de pobreza e extrema pobreza. Desde 2023, com valores atualizados.<br><br>
-<strong>💰 Valores (2024-2025):</strong><br>
+Transferência de renda para famílias em situação de pobreza e extrema pobreza.<br><br>
+<strong>💰 Valores (2024–2025):</strong><br>
 <ul>
   <li>🔸 <strong>Benefício mínimo:</strong> R$ 600 por família</li>
-  <li>🔸 <strong>Adicional por criança (0-6 anos):</strong> R$ 150</li>
-  <li>🔸 <strong>Adicional por jovem (7-18 anos):</strong> R$ 50</li>
+  <li>🔸 <strong>Adicional criança (0–6 anos):</strong> R$ 150</li>
+  <li>🔸 <strong>Adicional jovem (7–18 anos):</strong> R$ 50</li>
   <li>🔸 <strong>Adicional gestante:</strong> R$ 50</li>
 </ul><br>
 <strong>✅ Quem tem direito:</strong><br>
 <ul>
   <li>🔸 Renda per capita familiar de até <strong>R$ 218/mês</strong></li>
   <li>🔸 Estar inscrito no <strong>CadÚnico</strong></li>
-  <li>🔸 Manter vacinação e frequência escolar das crianças em dia</li>
+  <li>🔸 Manter vacinação e frequência escolar das crianças</li>
 </ul><br>
 <strong>📍 Como se inscrever:</strong> Procure o <strong>CRAS</strong> mais próximo com RG, CPF, comprovante de residência e certidões de nascimento dos filhos.`,
     chips: ['INSS', 'Educação', 'Habitação'],
@@ -55,17 +56,17 @@ Programa de transferência de renda para famílias em situação de pobreza e ex
     title: '🏥 Saúde Pública (SUS)',
     text: `<strong>📋 Seus direitos no SUS:</strong><br><br>
 <ul>
-  <li>🔸 <strong>Atendimento universal:</strong> Qualquer pessoa tem direito ao SUS, brasileiro ou não</li>
-  <li>🔸 <strong>UBS (Posto de Saúde):</strong> Consultas, vacinas, exames básicos, curativos, pré-natal</li>
+  <li>🔸 <strong>Atendimento universal:</strong> Qualquer pessoa tem direito ao SUS</li>
+  <li>🔸 <strong>UBS (Posto de Saúde):</strong> Consultas, vacinas, exames básicos, pré-natal</li>
   <li>🔸 <strong>UPA 24h:</strong> Urgências e emergências</li>
   <li>🔸 <strong>Farmácia Popular:</strong> Medicamentos com até 90% de desconto ou grátis</li>
   <li>🔸 <strong>SAMU 192:</strong> Ambulância gratuita para emergências</li>
 </ul><br>
-<strong>💊 Medicamentos gratuitos incluem:</strong> Hipertensão, diabetes, asma, anticoncepcionais, e muitos outros.<br><br>
-<strong>📞 Telefones importantes:</strong><br>
+<strong>💊 Medicamentos gratuitos incluem:</strong> Hipertensão, diabetes, asma, anticoncepcionais e muitos outros.<br><br>
+<strong>📞 Telefones:</strong><br>
 <ul>
-  <li>✅ <strong>SAMU: 192</strong> (emergências)</li>
-  <li>✅ <strong>Disque Saúde: 136</strong> (ouvidoria e informações)</li>
+  <li>✅ <strong>SAMU: 192</strong></li>
+  <li>✅ <strong>Disque Saúde: 136</strong></li>
 </ul>`,
     chips: ['INSS', 'Bolsa Família', 'Direitos do Idoso'],
     sources: ['gov.br/saude', 'Telefone 136']
@@ -75,54 +76,51 @@ Programa de transferência de renda para famílias em situação de pobreza e ex
     text: `<strong>📋 Seus principais direitos (CLT):</strong><br><br>
 <ul>
   <li>🔸 <strong>Carteira assinada</strong> obrigatória desde o 1º dia</li>
-  <li>🔸 <strong>Salário mínimo:</strong> R$ 1.412 (2024) — nenhum salário pode ser menor</li>
-  <li>🔸 <strong>13º salário:</strong> 1ª parcela até 30/Nov, 2ª parcela até 20/Dez</li>
-  <li>🔸 <strong>Férias:</strong> 30 dias após 12 meses + 1/3 constitucional</li>
-  <li>🔸 <strong>FGTS:</strong> Empregador deposita 8% do salário mensalmente</li>
-  <li>🔸 <strong>Vale-transporte:</strong> Desconto máximo de 6% do salário</li>
+  <li>🔸 <strong>Salário mínimo:</strong> R$ 1.412 (2024)</li>
+  <li>🔸 <strong>13º salário</strong> · <strong>Férias:</strong> 30 dias + 1/3 constitucional</li>
+  <li>🔸 <strong>FGTS:</strong> 8% do salário mensalmente</li>
   <li>🔸 <strong>Jornada máxima:</strong> 8h/dia, 44h/semana</li>
 </ul><br>
-<strong>🚨 Foi demitido sem justa causa? Você tem direito a:</strong><br>
+<strong>🚨 Demitido sem justa causa? Você tem direito a:</strong><br>
 <ul>
-  <li>✅ Aviso prévio (30 dias + 3 dias/ano trabalhado)</li>
+  <li>✅ Aviso prévio (30 dias + 3 dias/ano)</li>
   <li>✅ Multa de 40% do FGTS</li>
   <li>✅ Saque do FGTS</li>
   <li>✅ Seguro-desemprego (3 a 5 parcelas)</li>
 </ul><br>
-<strong>📍 Problemas?</strong> Procure o <strong>Ministério do Trabalho</strong> ou um <strong>sindicato</strong> da sua categoria.`,
+<strong>📍 Problemas?</strong> Procure o <strong>Ministério do Trabalho</strong> ou seu <strong>sindicato</strong>.`,
     chips: ['INSS', 'Bolsa Família', 'Documentos'],
     sources: ['Ministério do Trabalho', 'gov.br/esocial']
   },
   educacao: {
     title: '🎓 Educação & Bolsas',
-    text: `<strong>📋 Programas educacionais disponíveis:</strong><br><br>
+    text: `<strong>📋 Programas disponíveis:</strong><br><br>
 <ul>
-  <li>🔸 <strong>PROUNI:</strong> Bolsas de 50% ou 100% em faculdades particulares — precisa ter feito ENEM</li>
-  <li>🔸 <strong>FIES:</strong> Financiamento a juros baixos para graduação — renda familiar até 3 salários mínimos</li>
-  <li>🔸 <strong>SISU:</strong> Vagas em universidades públicas usando nota do ENEM</li>
-  <li>🔸 <strong>EJA:</strong> Educação de Jovens e Adultos — gratuito para quem não completou o ensino fundamental/médio</li>
-  <li>🔸 <strong>ENCCEJA:</strong> Prova para certificação de ensino fundamental e médio (gratuito)</li>
-  <li>🔸 <strong>Cursos gratuitos:</strong> SENAI, SENAC, SESC e Escolas Técnicas Estaduais</li>
+  <li>🔸 <strong>PROUNI:</strong> Bolsas de 50% ou 100% em faculdades particulares</li>
+  <li>🔸 <strong>FIES:</strong> Financiamento com juros baixos — renda até 3 salários mínimos</li>
+  <li>🔸 <strong>SISU:</strong> Vagas em universidades públicas com nota do ENEM</li>
+  <li>🔸 <strong>EJA:</strong> Gratuito para quem não completou fundamental/médio</li>
+  <li>🔸 <strong>ENCCEJA:</strong> Certificação de ensino fundamental e médio (gratuito)</li>
+  <li>🔸 <strong>Cursos gratuitos:</strong> SENAI, SENAC, SESC e Escolas Técnicas</li>
 </ul><br>
-<strong>📅 Fique atento às datas do ENEM e das inscrições!</strong>`,
+<strong>📅 Fique atento às datas do ENEM e inscrições!</strong>`,
     chips: ['Bolsa Família', 'Documentos', 'Trabalho'],
     sources: ['sisu.mec.gov.br', 'prouniportal.mec.gov.br']
   },
   habitacao: {
     title: '🏘️ Habitação & Moradia',
-    text: `<strong>📋 Programas e direitos de moradia:</strong><br><br>
+    text: `<strong>📋 Programas e direitos:</strong><br><br>
 <ul>
-  <li>🔸 <strong>Minha Casa Minha Vida:</strong> Financiamento de imóveis com subsídios do governo — renda até R$ 8.000/mês</li>
+  <li>🔸 <strong>Minha Casa Minha Vida:</strong> Financiamento com subsídios — renda até R$ 8.000/mês</li>
   <li>🔸 <strong>FAIXA 1:</strong> Renda até R$ 2.640 — maior subsídio, parcelas a partir de R$ 80</li>
-  <li>🔸 <strong>Aluguel Social:</strong> Auxílio para famílias em situação de vulnerabilidade — procure o CRAS</li>
+  <li>🔸 <strong>Aluguel Social:</strong> Auxílio para famílias vulneráveis — procure o CRAS</li>
 </ul><br>
 <strong>🔒 Direitos do inquilino:</strong><br>
 <ul>
-  <li>✅ O proprietário <strong>não pode</strong> despejar sem aviso prévio de 30 dias</li>
-  <li>✅ Reajuste anual limitado ao índice do contrato (geralmente IGPM ou IPCA)</li>
+  <li>✅ Não pode ser despejado sem aviso prévio de 30 dias</li>
+  <li>✅ Reajuste anual limitado ao índice do contrato (IGPM ou IPCA)</li>
   <li>✅ Direito a recibo de pagamento</li>
-</ul><br>
-<strong>📍 Inscrição:</strong> Cadastro nas prefeituras ou Caixa Econômica Federal.`,
+</ul>`,
     chips: ['Bolsa Família', 'Documentos', 'Trabalho'],
     sources: ['Caixa Econômica Federal', 'gov.br/habitacao']
   },
@@ -130,45 +128,97 @@ Programa de transferência de renda para famílias em situação de pobreza e ex
     title: '📑 Documentos & Registros',
     text: `<strong>📋 Documentos essenciais e como obter:</strong><br><br>
 <ul>
-  <li>🔸 <strong>CPF:</strong> Gratuito via <a href="https://www.gov.br" target="_blank">Gov.br</a>, Correios (R$ 7+) ou Receita Federal</li>
-  <li>🔸 <strong>RG (Carteira de Identidade Nacional - CIN):</strong> Novo modelo unificado — emitido em postos do IIRGD/DETRAN. 1ª via gratuita</li>
-  <li>🔸 <strong>Título de Eleitor:</strong> Obrigatório dos 18 aos 70 anos — emitir pelo <a href="https://www.tse.jus.br/eleitor/titulo-de-eleitor" target="_blank">TSE</a></li>
-  <li>🔸 <strong>Certidão de Nascimento:</strong> 1ª via gratuita em cartório — necessária para tudo</li>
-  <li>🔸 <strong>Carteira de Trabalho Digital:</strong> Pelo app CTPS Digital ou site do governo</li>
-  <li>🔸 <strong>Gov.br:</strong> Cadastro único para serviços digitais do governo federal</li>
+  <li>🔸 <strong>CPF:</strong> Grátis via <a href="https://www.gov.br" target="_blank">Gov.br</a>, Correios ou Receita Federal</li>
+  <li>🔸 <strong>RG (CIN):</strong> Novo modelo unificado — 1ª via gratuita em postos do IIRGD/DETRAN</li>
+  <li>🔸 <strong>Título de Eleitor:</strong> Obrigatório dos 18 aos 70 anos — <a href="https://www.tse.jus.br" target="_blank">TSE</a></li>
+  <li>🔸 <strong>Certidão de Nascimento:</strong> 1ª via gratuita em cartório</li>
+  <li>🔸 <strong>CTPS Digital:</strong> Pelo app ou site do governo</li>
+  <li>🔸 <strong>Gov.br:</strong> Conta única para serviços digitais federais</li>
 </ul><br>
-<strong>💡 Dica:</strong> Com conta <strong>Gov.br nível Ouro</strong>, você acessa quase todos os serviços sem sair de casa!`,
+<strong>💡 Dica:</strong> Com conta <strong>Gov.br nível Ouro</strong>, você acessa quase tudo sem sair de casa!`,
     chips: ['INSS', 'Trabalho', 'Educação'],
     sources: ['gov.br', 'Receita Federal']
   },
   idoso: {
     title: '👴 Direitos do Idoso',
-    text: `<strong>📋 Estatuto do Idoso — Direitos garantidos (60+ anos):</strong><br><br>
+    text: `<strong>📋 Estatuto do Idoso — Direitos (60+ anos):</strong><br><br>
 <ul>
-  <li>🔸 <strong>Transporte público gratuito:</strong> A partir de <strong>65 anos</strong> — ônibus urbanos gratuitos</li>
+  <li>🔸 <strong>Transporte público gratuito:</strong> A partir dos <strong>65 anos</strong></li>
   <li>🔸 <strong>Meia-entrada:</strong> Em eventos culturais, esportivos e de lazer</li>
   <li>🔸 <strong>Atendimento prioritário:</strong> Bancos, hospitais, supermercados e órgãos públicos</li>
-  <li>🔸 <strong>Prioridade na fila do SUS:</strong> Atendimento preferencial em todas as unidades</li>
-  <li>🔸 <strong>BPC/LOAS:</strong> R$ 1.412/mês para idosos 65+ com renda familiar per capita inferior a 1/4 do salário mínimo</li>
+  <li>🔸 <strong>BPC/LOAS:</strong> R$ 1.412/mês para 65+ com renda per capita &lt; 1/4 do salário mínimo</li>
   <li>🔸 <strong>Isenção de IPTU:</strong> Em muitos municípios — consulte a prefeitura</li>
   <li>🔸 <strong>Desconto em medicamentos:</strong> Farmácia Popular e programas municipais</li>
 </ul><br>
-<strong>📞 Denuncie maus-tratos:</strong> <strong>Disque 100</strong> (Disque Direitos Humanos — 24h, gratuito)`,
+<strong>📞 Denuncie maus-tratos:</strong> <strong>Disque 100</strong> (24h, gratuito)`,
     chips: ['INSS', 'Saúde Pública', 'Documentos'],
-    sources: ['Disque 100', 'Estatuto do Idoso - Lei 10.741/2003']
+    sources: ['Disque 100', 'Estatuto do Idoso — Lei 10.741/2003']
   }
 };
 
 // ══════════════════════════════════════════════
+// CONVERSATION STORE — persistência em localStorage
+// ══════════════════════════════════════════════
+const ConversationStore = (() => {
+  const KEY = 'vp_conversations_v2';
+  const MAX = 25;
+
+  function getAll() {
+    try { return JSON.parse(localStorage.getItem(KEY) || '[]'); }
+    catch { return []; }
+  }
+
+  function save(conv) {
+    const list = getAll();
+    const idx = list.findIndex(c => c.id === conv.id);
+    if (idx >= 0) { list[idx] = conv; }
+    else {
+      list.unshift(conv);
+      if (list.length > MAX) list.splice(MAX);
+    }
+    try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) {
+      // localStorage cheio: remove as mais antigas
+      list.splice(MAX / 2);
+      localStorage.setItem(KEY, JSON.stringify(list));
+    }
+  }
+
+  function remove(id) {
+    const list = getAll().filter(c => c.id !== id);
+    localStorage.setItem(KEY, JSON.stringify(list));
+  }
+
+  function get(id) { return getAll().find(c => c.id === id) || null; }
+
+  function create() {
+    return {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+      title: 'Nova conversa',
+      messages: [],   // {role: 'user'|'ai', html: '', text: '', time: ''}
+      chips: [],
+      sources: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+  }
+
+  function clear() { localStorage.removeItem(KEY); }
+
+  return { getAll, save, remove, get, create, clear };
+})();
+
+// ══════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════
-let conversationHistory = [];
+let conversationHistory = [];      // Gemini history [{role, text}]
+let currentConv = null;            // Conversa atual (objeto)
 let currentFontSize = parseInt(localStorage.getItem('vp_fontSize') || '100');
 let isHighContrast = localStorage.getItem('vp_contrast') === 'true';
 let isLightMode = localStorage.getItem('vp_theme') === 'light';
 let autoTTS = localStorage.getItem('vp_autoTTS') === 'true';
-let metrics = JSON.parse(localStorage.getItem('vp_metrics') || '{"queries":0,"topics":[],"docs":0}');
+let metrics = JSON.parse(localStorage.getItem('vp_metrics') || '{"queries":0,"topics":{},"docs":0}');
 let uploadedFile = null;
+let _topicQueryCount = {};  // contagem de queries por tópico (runtime)
 
 // ══════════════════════════════════════════════
 // DOM REFERENCES
@@ -201,27 +251,30 @@ const topicBtns = document.querySelectorAll('#topicGroupList .topic-btn');
 const aboutModal = document.getElementById('aboutModal');
 const aboutBtn = document.getElementById('aboutBtn');
 const aboutClose = document.getElementById('aboutClose');
+const convList = document.getElementById('convList');
+const convEmpty = document.getElementById('convEmpty');
+const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+const sidebar = document.getElementById('sidebar');
+const sidebarToggle = document.getElementById('sidebarToggle');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
 
 // ══════════════════════════════════════════════
-// INTENT DETECTION — Local KB fallback
+// INTENT DETECTION
 // ══════════════════════════════════════════════
 function detectIntent(message) {
   const lower = message.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const intentMap = {
-    inss: ['inss', 'aposentadoria', 'aposentar', 'previdencia', 'contribui', 'contribuicao', 'pensao', 'auxilio-doenca', 'auxilio doenca', 'bpc', 'beneficio'],
-    bolsa: ['bolsa familia', 'bolsa-familia', 'cadunico', 'cras', 'transferencia de renda', 'auxilio brasil', 'pobreza'],
-    saude: ['sus', 'saude', 'hospital', 'ubs', 'posto de saude', 'medico', 'remedio', 'medicamento', 'farmacia popular', 'vacina', 'samu', 'upa'],
-    trabalho: ['trabalho', 'trabalhista', 'clt', 'ferias', 'fgts', '13 salario', 'decimo terceiro', 'demitido', 'demissao', 'rescisao', 'seguro desemprego', 'carteira assinada', 'hora extra'],
-    educacao: ['educacao', 'prouni', 'fies', 'sisu', 'enem', 'eja', 'encceja', 'faculdade', 'universidade', 'bolsa de estudo', 'curso gratuito', 'escola', 'senai', 'senac'],
-    habitacao: ['habitacao', 'moradia', 'casa', 'minha casa', 'aluguel', 'despejo', 'inquilino', 'financiamento', 'imovel'],
-    documentos: ['cpf', 'rg', 'documento', 'certidao', 'titulo', 'carteira de trabalho', 'ctps', 'identidade', 'registro'],
-    idoso: ['idoso', 'velho', 'terceira idade', 'aposentado', 'estatuto do idoso', 'transporte gratuito', 'meia entrada', 'loas', '65 anos', '60 anos']
+    inss: ['inss','aposentadoria','aposentar','previdencia','contribui','contribuicao','pensao','auxilio-doenca','auxilio doenca','bpc','beneficio previdenciario'],
+    bolsa: ['bolsa familia','bolsa-familia','cadunico','cras','transferencia de renda','auxilio brasil','pobreza'],
+    saude: ['sus','saude','hospital','ubs','posto de saude','medico','remedio','medicamento','farmacia popular','vacina','samu','upa'],
+    trabalho: ['trabalho','trabalhista','clt','ferias','fgts','13 salario','decimo terceiro','demitido','demissao','rescisao','seguro desemprego','carteira assinada','hora extra'],
+    educacao: ['educacao','prouni','fies','sisu','enem','eja','encceja','faculdade','universidade','bolsa de estudo','curso gratuito','escola','senai','senac'],
+    habitacao: ['habitacao','moradia','casa','minha casa','aluguel','despejo','inquilino','financiamento','imovel'],
+    documentos: ['cpf','rg','documento','certidao','titulo','carteira de trabalho','ctps','identidade','registro'],
+    idoso: ['idoso','velho','terceira idade','aposentado','estatuto do idoso','transporte gratuito','meia entrada','loas','65 anos','60 anos']
   };
-
-  for (const [intent, keywords] of Object.entries(intentMap)) {
-    for (const kw of keywords) {
-      if (lower.includes(kw)) return KB[intent];
-    }
+  for (const [intent, kws] of Object.entries(intentMap)) {
+    for (const kw of kws) { if (lower.includes(kw)) return { key: intent, ...KB[intent] }; }
   }
   return null;
 }
@@ -229,7 +282,7 @@ function detectIntent(message) {
 function getGreetingResponse() {
   return {
     text: `<strong>Olá! 👋 Que bom te ver por aqui!</strong><br><br>
-Sou o <strong>VozPública</strong>, seu assistente virtual de direitos e serviços públicos brasileiros. Posso te ajudar com:<br><br>
+Sou o <strong>VozPública</strong>, seu assistente de direitos e serviços públicos. Posso te ajudar com:<br><br>
 <ul>
   <li>🏛️ <strong>INSS e Aposentadoria</strong></li>
   <li>💚 <strong>Bolsa Família e benefícios sociais</strong></li>
@@ -239,23 +292,24 @@ Sou o <strong>VozPública</strong>, seu assistente virtual de direitos e serviç
   <li>🏘️ <strong>Habitação e moradia</strong></li>
   <li>📑 <strong>Documentos e registros</strong></li>
   <li>👴 <strong>Direitos do idoso</strong></li>
+  <li>📍 <strong>Unidades CRAS e UBS próximas de você</strong></li>
 </ul><br>
-É só perguntar! Pode digitar ou falar normalmente, como se estivesse conversando com um amigo. 😊`,
+É só perguntar! Pode digitar normalmente, como conversa mesmo. 😊`,
     chips: ['INSS', 'Bolsa Família', 'Saúde', 'Trabalho']
   };
 }
 
 function getFallbackResponse() {
   return {
-    text: `Desculpe, não consegui encontrar informações específicas sobre isso na minha base local. 😔<br><br>
+    text: `Não encontrei informações específicas sobre isso na minha base local. 😔<br><br>
 <strong>💡 Sugestões:</strong><br>
 <ul>
-  <li>🔸 Tente reformular sua pergunta com palavras mais simples</li>
-  <li>🔸 Use os botões de categorias na lateral esquerda</li>
-  <li>🔸 Configure uma chave do <strong>Gemini AI</strong> em ⚙️ Config para respostas ilimitadas</li>
+  <li>🔸 Reformule com palavras mais simples</li>
+  <li>🔸 Use os botões de categorias na barra lateral</li>
+  <li>🔸 Configure uma chave <strong>Gemini AI</strong> em ⚙️ para respostas ilimitadas</li>
+  <li>🔸 Use "📍 Perto de Mim" para localizar CRAS ou UBS</li>
 </ul><br>
-<strong>📞 Se precisar de ajuda urgente:</strong><br>
-• Disque <strong>135</strong> (INSS) · <strong>136</strong> (Saúde) · <strong>100</strong> (Direitos Humanos)`,
+<strong>📞 Ajuda urgente:</strong> · <strong>135</strong> (INSS) · <strong>136</strong> (Saúde) · <strong>100</strong> (Direitos Humanos)`,
     chips: ['INSS', 'Bolsa Família', 'Saúde', 'Trabalho']
   };
 }
@@ -263,49 +317,45 @@ function getFallbackResponse() {
 // ══════════════════════════════════════════════
 // MESSAGE RENDERING
 // ══════════════════════════════════════════════
-function renderMessage(type, content, chips = [], sources = []) {
-  if (welcomeScreen) welcomeScreen.style.display = 'none';
-  if (docAnalyzer) docAnalyzer.style.display = 'none';
+function renderMessage(type, contentHTML, chips = [], sources = [], extraContent = '') {
+  hideWelcome();
 
   const msg = document.createElement('div');
   msg.className = `message ${type}`;
   msg.setAttribute('role', 'article');
-  msg.setAttribute('aria-label', type === 'ai' ? 'Resposta do VozPública' : 'Sua mensagem');
 
   const avatar = type === 'ai' ? '📢' : '👤';
   const name = type === 'ai' ? 'VozPública' : 'Você';
 
-  let chipsHTML = '';
-  if (chips && chips.length > 0) {
-    chipsHTML = `<div class="msg-chips">${chips.map(c =>
-      `<button class="msg-chip" onclick="handleChipClick('${c}')">${c}</button>`
-    ).join('')}</div>`;
-  }
+  const chipsHTML = chips.length
+    ? `<div class="msg-chips">${chips.map(c =>
+        `<button class="msg-chip" onclick="handleChipClick('${c}')">${c}</button>`).join('')}</div>`
+    : '';
 
-  let sourcesHTML = '';
-  if (sources && sources.length > 0) {
-    sourcesHTML = `<div class="msg-sources"><span class="source-label">📎 Fontes:</span> ${sources.join(' · ')}</div>`;
-  }
+  const sourcesHTML = sources.length
+    ? `<div class="msg-sources"><span class="source-label">📎 Fontes:</span> ${sources.join(' · ')}</div>`
+    : '';
 
-  let ttsBtn = '';
-  if (type === 'ai') {
-    ttsBtn = `<button class="msg-tts-btn" onclick="speakMessage(this)" title="Ouvir resposta" aria-label="Ouvir resposta em áudio">
-      <span class="tts-icon">🔊</span>
-      <span class="tts-wave" style="display:none">
-        <span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span>
-      </span>
-    </button>`;
-  }
+  const ttsBtn = type === 'ai'
+    ? `<button class="msg-tts-btn" onclick="speakMessage(this)" title="Ouvir" aria-label="Ouvir resposta">
+        <span class="tts-icon">🔊</span>
+        <span class="tts-wave" style="display:none">
+          <span class="wave-bar"></span><span class="wave-bar"></span>
+          <span class="wave-bar"></span><span class="wave-bar"></span>
+        </span>
+       </button>` : '';
+
+  const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
   msg.innerHTML = `
     <div class="msg-avatar ${type}" aria-hidden="true">${avatar}</div>
     <div class="msg-body">
       <div class="msg-header">
         <span class="msg-name">${name}</span>
-        <span class="msg-time">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+        <span class="msg-time">${timeStr}</span>
         ${ttsBtn}
       </div>
-      <div class="msg-content">${content}</div>
+      <div class="msg-content">${contentHTML}${extraContent}</div>
       ${sourcesHTML}
       ${chipsHTML}
     </div>
@@ -314,12 +364,29 @@ function renderMessage(type, content, chips = [], sources = []) {
   chatMessages.appendChild(msg);
   msg.scrollIntoView({ behavior: 'smooth', block: 'end' });
 
-  // Auto-TTS if enabled
   if (type === 'ai' && autoTTS) {
     setTimeout(() => speakMessage(msg.querySelector('.msg-tts-btn')), 600);
   }
 
+  // Salvar na conversa atual
+  if (currentConv) {
+    currentConv.messages.push({
+      role: type,
+      html: contentHTML + extraContent,
+      text: contentHTML.replace(/<[^>]*>/g, ' '),
+      time: timeStr
+    });
+    currentConv.updatedAt = Date.now();
+    ConversationStore.save(currentConv);
+    renderConversationList();
+  }
+
   return msg;
+}
+
+function hideWelcome() {
+  if (welcomeScreen) welcomeScreen.style.display = 'none';
+  if (docAnalyzer) docAnalyzer.style.display = 'none';
 }
 
 function showTypingIndicator() {
@@ -330,89 +397,359 @@ function showTypingIndicator() {
     <div class="msg-avatar ai" aria-hidden="true">📢</div>
     <div class="msg-body">
       <div class="typing-indicator" aria-label="VozPública está digitando">
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
+        <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
       </div>
-    </div>
-  `;
+    </div>`;
   chatMessages.appendChild(typing);
   typing.scrollIntoView({ behavior: 'smooth', block: 'end' });
 }
 
 function removeTypingIndicator() {
-  const t = document.getElementById('typingIndicator');
-  if (t) t.remove();
+  document.getElementById('typingIndicator')?.remove();
 }
 
 // ══════════════════════════════════════════════
-// MESSAGE PROCESSING — Gemini AI with local fallback
+// CEP DETECTION & AUTO-LOOKUP
+// ══════════════════════════════════════════════
+async function handleCEPinMessage(text) {
+  if (!window.GeoService) return null;
+  const cep = GeoService.extractCEP(text);
+  if (!cep) return null;
+
+  const data = await GeoService.lookupCEP(cep);
+  if (!data) return null;
+
+  const parts = [
+    data.logradouro ? `<strong>Logradouro:</strong> ${data.logradouro}` : null,
+    data.bairro ? `<strong>Bairro:</strong> ${data.bairro}` : null,
+    `<strong>Cidade:</strong> ${data.cidade}/${data.estado}`,
+    `<strong>CEP:</strong> ${data.cep}`
+  ].filter(Boolean);
+
+  return `<div class="cep-card">
+    <strong>📮 CEP Encontrado</strong><br>
+    ${parts.join('<br>')}
+    <br><br>
+    <button class="msg-chip" onclick="openGeoModalWithCEP('${cep}')">📍 Ver CRAS/UBS nesta região</button>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════
+// MESSAGE PROCESSING
 // ══════════════════════════════════════════════
 async function processMessage(userText) {
   if (!userText.trim()) return;
 
-  // Show user message
+  // Inicializa conversa se não existir
+  if (!currentConv) {
+    currentConv = ConversationStore.create();
+  }
+
+  // Atualiza título da conversa com o primeiro user message
+  if (currentConv.messages.length === 0 || currentConv.title === 'Nova conversa') {
+    currentConv.title = userText.slice(0, 45).trim() + (userText.length > 45 ? '…' : '');
+  }
+
   renderMessage('user', escapeHTML(userText));
   conversationHistory.push({ role: 'user', text: userText });
 
-  // Update metrics
+  // Métricas
   metrics.queries++;
   saveMetrics();
 
-  // Show typing
   showTypingIndicator();
 
-  // Greetings
+  // Detectar CEP em background (sem bloquear fluxo)
+  const cepPromise = handleCEPinMessage(userText);
+
+  // Saudações rápidas
   const lower = userText.toLowerCase();
-  if (['oi', 'ola', 'olá', 'bom dia', 'boa tarde', 'boa noite', 'hello', 'salve'].some(g => lower.includes(g)) && userText.length < 30) {
-    await delay(800);
+  const isGreeting = ['oi','ola','olá','bom dia','boa tarde','boa noite','hello','salve','oi!','olá!'].some(g => lower.includes(g)) && userText.length < 30;
+
+  if (isGreeting) {
+    await delay(700);
     removeTypingIndicator();
-    const greeting = getGreetingResponse();
-    renderMessage('ai', greeting.text, greeting.chips);
-    conversationHistory.push({ role: 'model', text: greeting.text });
+    const gr = getGreetingResponse();
+    renderMessage('ai', gr.text, gr.chips);
+    conversationHistory.push({ role: 'model', text: gr.text });
     return;
   }
 
-  // Try Gemini AI first
+  // Tentar Gemini AI
   if (AI.hasGeminiKey()) {
     try {
       const aiResponse = await AI.chat(userText, conversationHistory);
       if (aiResponse) {
+        const cepExtra = await cepPromise;
         removeTypingIndicator();
-        renderMessage('ai', aiResponse, ['INSS', 'Bolsa Família', 'Saúde', 'Trabalho']);
+        renderMessage('ai', aiResponse, ['INSS', 'Bolsa Família', 'Saúde', 'Trabalho'], [], cepExtra || '');
         conversationHistory.push({ role: 'model', text: aiResponse });
         return;
       }
     } catch (err) {
-      console.warn('Gemini failed, falling back to local KB:', err);
+      console.warn('Gemini fell back to KB:', err.message);
     }
   }
 
-  // Fallback to local knowledge base
-  await delay(1200 + Math.random() * 800);
+  // Fallback: Knowledge Base local
+  await delay(1100 + Math.random() * 700);
   removeTypingIndicator();
 
+  const cepExtra = await cepPromise;
   const kbResult = detectIntent(userText);
+
   if (kbResult) {
-    if (!metrics.topics.includes(kbResult.title)) {
-      metrics.topics.push(kbResult.title);
-      saveMetrics();
-    }
-    renderMessage('ai', kbResult.text, kbResult.chips, kbResult.sources);
+    // Atualizar métricas de tópicos
+    metrics.topics[kbResult.key] = (metrics.topics[kbResult.key] || 0) + 1;
+    saveMetrics();
+    renderMessage('ai', kbResult.text, kbResult.chips, kbResult.sources, cepExtra || '');
     conversationHistory.push({ role: 'model', text: kbResult.text });
   } else {
-    const fallback = getFallbackResponse();
-    renderMessage('ai', fallback.text, fallback.chips);
-    conversationHistory.push({ role: 'model', text: fallback.text });
+    const fb = getFallbackResponse();
+    renderMessage('ai', fb.text, fb.chips, [], cepExtra || '');
+    conversationHistory.push({ role: 'model', text: fb.text });
   }
 }
 
 // ══════════════════════════════════════════════
-// TTS — ElevenLabs + Browser fallback
+// CONVERSATION HISTORY UI
+// ══════════════════════════════════════════════
+function renderConversationList() {
+  const list = ConversationStore.getAll();
+  convEmpty.style.display = list.length === 0 ? 'block' : 'none';
+
+  // Limpa items existentes (exceto convEmpty)
+  Array.from(convList.querySelectorAll('.conv-item')).forEach(el => el.remove());
+
+  list.forEach(conv => {
+    const item = document.createElement('div');
+    item.className = 'conv-item' + (currentConv && currentConv.id === conv.id ? ' active' : '');
+    item.setAttribute('role', 'listitem');
+    item.setAttribute('data-id', conv.id);
+
+    const age = formatRelativeTime(conv.updatedAt);
+    const msgCount = conv.messages.length;
+
+    item.innerHTML = `
+      <span class="conv-item-icon">💬</span>
+      <div class="conv-item-body">
+        <div class="conv-item-title" title="${escapeHTML(conv.title)}">${escapeHTML(conv.title)}</div>
+        <div class="conv-item-meta">${age} · ${msgCount} mensagem${msgCount !== 1 ? 's' : ''}</div>
+      </div>
+      <button class="conv-item-del" onclick="deleteConversation(event,'${conv.id}')" aria-label="Excluir conversa" title="Excluir">🗑️</button>
+    `;
+
+    item.addEventListener('click', (e) => {
+      if (e.target.closest('.conv-item-del')) return;
+      loadConversation(conv.id);
+    });
+
+    convList.insertBefore(item, convEmpty);
+  });
+}
+
+function loadConversation(id) {
+  const conv = ConversationStore.get(id);
+  if (!conv) return;
+
+  currentConv = conv;
+  conversationHistory = [];
+
+  // Limpa chat
+  Array.from(chatMessages.querySelectorAll('.message')).forEach(el => el.remove());
+  if (welcomeScreen) welcomeScreen.style.display = 'none';
+  if (docAnalyzer) docAnalyzer.style.display = 'none';
+
+  // Re-renderiza mensagens (sem salvar de novo)
+  conv.messages.forEach(msg => {
+    const el = document.createElement('div');
+    el.className = `message ${msg.role}`;
+    const avatar = msg.role === 'ai' ? '📢' : '👤';
+    const name = msg.role === 'ai' ? 'VozPública' : 'Você';
+    el.innerHTML = `
+      <div class="msg-avatar ${msg.role}" aria-hidden="true">${avatar}</div>
+      <div class="msg-body">
+        <div class="msg-header">
+          <span class="msg-name">${name}</span>
+          <span class="msg-time">${msg.time || ''}</span>
+        </div>
+        <div class="msg-content">${msg.html}</div>
+      </div>`;
+    chatMessages.appendChild(el);
+
+    // Reconstrói history para Gemini
+    conversationHistory.push({ role: msg.role === 'ai' ? 'model' : 'user', text: msg.text || '' });
+  });
+
+  if (conv.messages.length > 0) {
+    chatMessages.lastElementChild?.scrollIntoView({ block: 'end' });
+  }
+
+  renderConversationList();
+  closeSidebar();
+}
+
+function deleteConversation(e, id) {
+  e.stopPropagation();
+  ConversationStore.remove(id);
+  if (currentConv && currentConv.id === id) {
+    startNewChat();
+  }
+  renderConversationList();
+}
+
+function startNewChat() {
+  conversationHistory = [];
+  currentConv = null;
+
+  Array.from(chatMessages.querySelectorAll('.message')).forEach(el => el.remove());
+  if (welcomeScreen) welcomeScreen.style.display = '';
+  if (docAnalyzer) docAnalyzer.style.display = 'none';
+  messageInput.value = '';
+  messageInput.style.height = 'auto';
+  sendBtn.disabled = true;
+
+  renderConversationList();
+}
+
+// ══════════════════════════════════════════════
+// GEOLOCATION MODAL
+// ══════════════════════════════════════════════
+const geoModal = document.getElementById('geoModal');
+const geoClose = document.getElementById('geoClose');
+let _allFacilities = [];
+
+function openGeoModal() {
+  geoModal.style.display = 'flex';
+  geoModal.setAttribute('aria-hidden', 'false');
+  showGeoState('idle');
+}
+
+function openGeoModalWithCEP(cep) {
+  openGeoModal();
+  const input = document.getElementById('geoCepInput');
+  if (input) input.value = cep;
+  searchByCEP(cep);
+}
+
+function showGeoState(state) {
+  ['idle','loading','error','results'].forEach(s => {
+    const el = document.getElementById(`geoState${s.charAt(0).toUpperCase() + s.slice(1)}`);
+    if (el) el.style.display = s === state ? (state === 'results' ? 'block' : 'flex') : 'none';
+  });
+}
+
+async function searchByGeolocation() {
+  if (!window.GeoService) {
+    showGeoError('Módulo de geolocalização não carregado.');
+    return;
+  }
+  showGeoState('loading');
+  document.getElementById('geoLoadingText').textContent = 'Obtendo sua localização...';
+
+  try {
+    const loc = await GeoService.getUserLocation();
+    document.getElementById('geoLoadingText').textContent = 'Buscando unidades próximas...';
+
+    const [facilities, geo] = await Promise.all([
+      GeoService.findNearbyFacilities(loc.lat, loc.lon),
+      GeoService.reverseGeocode(loc.lat, loc.lon)
+    ]);
+
+    const locText = [geo.suburb, geo.city].filter(Boolean).join(', ') || 'sua localização';
+    displayFacilities(facilities, locText);
+  } catch (err) {
+    showGeoError(err.message);
+  }
+}
+
+async function searchByCEP(cepValue) {
+  if (!window.GeoService) return;
+  const cep = (cepValue || document.getElementById('geoCepInput').value).replace(/\D/g, '');
+  if (cep.length !== 8) {
+    showGeoError('CEP inválido. Digite 8 dígitos.');
+    return;
+  }
+
+  showGeoState('loading');
+  document.getElementById('geoLoadingText').textContent = 'Buscando pelo CEP...';
+
+  try {
+    const data = await GeoService.lookupCEP(cep);
+    if (!data) { showGeoError('CEP não encontrado. Verifique e tente novamente.'); return; }
+
+    document.getElementById('geoLoadingText').textContent = 'Buscando unidades próximas...';
+
+    // Geocodificar o CEP para obter coordenadas
+    const geoRes = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(data.logradouro + ', ' + data.cidade + ', ' + data.estado + ', Brasil')}&format=json&limit=1`,
+      { headers: { 'User-Agent': 'VozPublica/1.0', 'Accept-Language': 'pt-BR' } }
+    );
+    const geoData = await geoRes.json();
+    if (!geoData.length) {
+      showGeoError('Não foi possível localizar este CEP no mapa. Tente usar a localização automática.');
+      return;
+    }
+
+    const lat = parseFloat(geoData[0].lat);
+    const lon = parseFloat(geoData[0].lon);
+    const facilities = await GeoService.findNearbyFacilities(lat, lon);
+    const locText = [data.bairro, data.cidade].filter(Boolean).join(', ');
+    displayFacilities(facilities, locText);
+  } catch (err) {
+    showGeoError('Erro ao buscar pelo CEP: ' + err.message);
+  }
+}
+
+function showGeoError(msg) {
+  document.getElementById('geoErrorMsg').textContent = msg;
+  showGeoState('error');
+}
+
+function displayFacilities(facilities, locationLabel) {
+  _allFacilities = facilities;
+  document.getElementById('geoLocationText').textContent = locationLabel;
+  renderFacilityList('all');
+  showGeoState('results');
+}
+
+function renderFacilityList(filter) {
+  const list = document.getElementById('facilityList');
+  const items = filter === 'all'
+    ? _allFacilities
+    : _allFacilities.filter(f => f.type === filter || f.type.toLowerCase().includes(filter.toLowerCase()));
+
+  if (items.length === 0) {
+    list.innerHTML = `<div class="no-facilities">😔 Nenhuma unidade do tipo <strong>${filter}</strong> encontrada num raio de 6km.<br><br>Tente outro filtro ou ampliar a busca.</div>`;
+    return;
+  }
+
+  list.innerHTML = items.map((f, i) => `
+    <div class="facility-card" style="animation-delay:${i * 0.04}s" role="listitem">
+      <div class="facility-icon-wrap" style="background:${f.color}18;border-color:${f.color}30">
+        <span>${f.icon}</span>
+      </div>
+      <div class="facility-info">
+        <span class="facility-type-badge" style="background:${f.color}">${f.type}</span>
+        <div class="facility-name">${escapeHTML(f.name)}</div>
+        ${f.address ? `<div class="facility-addr">📍 ${escapeHTML(f.address)}</div>` : ''}
+        ${f.phone ? `<div class="facility-phone">📞 ${escapeHTML(f.phone)}</div>` : ''}
+        <div class="facility-actions">
+          <a href="${f.mapsLink}" target="_blank" rel="noopener" class="facility-link">🗺️ Como chegar</a>
+          ${f.website ? `<a href="${f.website}" target="_blank" rel="noopener" class="facility-link">🌐 Site</a>` : ''}
+        </div>
+      </div>
+      <div class="facility-distance">${f.distLabel}</div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════════
+// TTS
 // ══════════════════════════════════════════════
 async function speakMessage(btn) {
   if (!btn) return;
-  const msgContent = btn.closest('.msg-body').querySelector('.msg-content');
+  const msgContent = btn.closest('.msg-body')?.querySelector('.msg-content');
   if (!msgContent) return;
 
   const icon = btn.querySelector('.tts-icon');
@@ -428,11 +765,11 @@ async function speakMessage(btn) {
   if (icon) icon.style.display = 'none';
   if (wave) wave.style.display = 'flex';
 
-  document.addEventListener('tts-ended', () => {
+  const cleanup = () => {
     if (icon) icon.style.display = '';
     if (wave) wave.style.display = 'none';
-  }, { once: true });
-
+  };
+  document.addEventListener('tts-ended', cleanup, { once: true });
   await AI.speak(msgContent.textContent);
 }
 
@@ -440,8 +777,8 @@ async function speakMessage(btn) {
 // DOCUMENT ANALYZER
 // ══════════════════════════════════════════════
 function toggleDocAnalyzer() {
-  const isVisible = docAnalyzer.style.display !== 'none';
-  if (isVisible) {
+  const vis = docAnalyzer.style.display !== 'none';
+  if (vis) {
     docAnalyzer.style.display = 'none';
   } else {
     if (welcomeScreen) welcomeScreen.style.display = 'none';
@@ -452,9 +789,8 @@ function toggleDocAnalyzer() {
 
 async function analyzeUploadedDoc() {
   if (!uploadedFile) return;
-
   docAnalyzer.style.display = 'none';
-  renderMessage('user', `📄 Analisando documento: ${uploadedFile.name}`);
+  renderMessage('user', `📄 Analisando documento: ${escapeHTML(uploadedFile.name)}`);
   showTypingIndicator();
 
   const result = await DocAnalyzer.analyze(uploadedFile);
@@ -465,12 +801,12 @@ async function analyzeUploadedDoc() {
     saveMetrics();
     renderMessage('ai', result.analysis, ['INSS', 'Documentos', 'Trabalho']);
   } else {
-    renderMessage('ai', `⚠️ ${result.error}<br><br>
+    renderMessage('ai', `⚠️ ${escapeHTML(result.error)}<br><br>
 <strong>💡 Dicas:</strong><br>
 <ul>
-  <li>Tire uma foto mais clara e bem iluminada do documento</li>
+  <li>Tire uma foto mais clara e bem iluminada</li>
   <li>Certifique-se que todo o texto está legível</li>
-  <li>Configure sua chave do Gemini AI em ⚙️ Config</li>
+  <li>Configure sua chave Gemini AI em ⚙️</li>
 </ul>`);
   }
 
@@ -485,21 +821,21 @@ async function analyzeUploadedDoc() {
 function startTopic(topicKey) {
   const topic = KB[topicKey];
   if (!topic) return;
+  hideWelcome();
 
-  if (welcomeScreen) welcomeScreen.style.display = 'none';
-  if (docAnalyzer) docAnalyzer.style.display = 'none';
+  metrics.topics[topicKey] = (metrics.topics[topicKey] || 0) + 1;
+  saveMetrics();
 
-  if (!metrics.topics.includes(topic.title)) {
-    metrics.topics.push(topic.title);
-    saveMetrics();
-  }
+  if (!currentConv) currentConv = ConversationStore.create();
+  if (currentConv.title === 'Nova conversa') currentConv.title = topic.title;
 
   showTypingIndicator();
   setTimeout(() => {
     removeTypingIndicator();
     renderMessage('ai', topic.text, topic.chips, topic.sources);
     conversationHistory.push({ role: 'model', text: topic.text });
-  }, 600);
+    closeSidebar();
+  }, 550);
 }
 
 function handleChipClick(chipText) {
@@ -519,8 +855,19 @@ function handleChipClick(chipText) {
 }
 
 // ══════════════════════════════════════════════
-// METRICS
+// DASHBOARD
 // ══════════════════════════════════════════════
+const TOPIC_LABELS = {
+  inss: '🏛️ INSS',
+  saude: '🏥 Saúde',
+  bolsa: '💚 Bolsa Fam.',
+  trabalho: '⚖️ Trabalho',
+  educacao: '🎓 Educação',
+  habitacao: '🏘️ Habitação',
+  documentos: '📑 Docs',
+  idoso: '👴 Idoso'
+};
+
 function saveMetrics() {
   localStorage.setItem('vp_metrics', JSON.stringify(metrics));
   updateDashboard();
@@ -530,9 +877,38 @@ function updateDashboard() {
   const q = document.getElementById('totalQueries');
   const t = document.getElementById('topicsExplored');
   const d = document.getElementById('docsAnalyzed');
-  if (q) q.textContent = metrics.queries;
-  if (t) t.textContent = metrics.topics.length;
-  if (d) d.textContent = metrics.docs;
+  const chart = document.getElementById('dashTopicsChart');
+
+  const topicCount = Object.keys(metrics.topics || {}).length;
+  if (q) q.textContent = metrics.queries || 0;
+  if (t) t.textContent = topicCount;
+  if (d) d.textContent = metrics.docs || 0;
+
+  if (!chart) return;
+
+  const topTopics = Object.entries(metrics.topics || {})
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4);
+
+  if (topTopics.length === 0) {
+    chart.innerHTML = '<div class="dash-chart-label" style="text-align:center;padding:8px">Explore categorias para ver estatísticas</div>';
+    return;
+  }
+
+  const maxVal = topTopics[0][1];
+  const html = `
+    <div class="dash-chart-label">Tópicos mais consultados</div>
+    ${topTopics.map(([key, count]) => `
+      <div class="dash-bar-row">
+        <span class="dash-bar-label">${TOPIC_LABELS[key] || key}</span>
+        <div class="dash-bar-track">
+          <div class="dash-bar-fill" style="width:${Math.round((count / maxVal) * 100)}%"></div>
+        </div>
+        <span class="dash-bar-count">${count}</span>
+      </div>
+    `).join('')}
+  `;
+  chart.innerHTML = html;
 }
 
 // ══════════════════════════════════════════════
@@ -546,35 +922,27 @@ function applyFontSize() {
 
 function applyContrast() {
   document.body.classList.toggle('high-contrast', isHighContrast);
-  if (contrastToggle) contrastToggle.setAttribute('aria-checked', isHighContrast);
-  localStorage.setItem('vp_contrast', isHighContrast);
+  contrastToggle?.setAttribute('aria-checked', isHighContrast.toString());
+  localStorage.setItem('vp_contrast', isHighContrast.toString());
 }
 
 function applyTheme() {
   document.body.classList.toggle('light-mode', isLightMode);
-  if (themeToggleBtn) {
-    const icon = themeToggleBtn.querySelector('.theme-icon');
-    if (icon) icon.textContent = isLightMode ? '☀️' : '🌙';
-  }
+  const icon = themeToggleBtn?.querySelector('.theme-icon');
+  if (icon) icon.textContent = isLightMode ? '☀️' : '🌙';
 }
 
 // ══════════════════════════════════════════════
-// SETTINGS MODAL
+// SETTINGS
 // ══════════════════════════════════════════════
 function updateAPIStatus() {
   const gs = document.getElementById('geminiStatus');
   const es = document.getElementById('elevenLabsStatus');
+  const badge = document.getElementById('aiStatus');
   if (gs) gs.textContent = AI.hasGeminiKey() ? '✅ Conectado — IA Gemini ativa' : '❌ Não configurado — usando base local';
-  if (es) es.textContent = AI.hasElevenLabsKey() ? '✅ Conectado — Voz ElevenLabs ativa' : '❌ Não configurado — usando voz do navegador';
-  if (aiStatusText) {
-    if (AI.hasGeminiKey()) {
-      aiStatusText.textContent = 'Gemini AI';
-      document.getElementById('aiStatus')?.classList.add('ai-active');
-    } else {
-      aiStatusText.textContent = 'Base Local';
-      document.getElementById('aiStatus')?.classList.remove('ai-active');
-    }
-  }
+  if (es) es.textContent = AI.hasElevenLabsKey() ? '✅ Conectado — Voz ElevenLabs ativa' : '❌ Não configurado — voz do navegador';
+  if (aiStatusText) aiStatusText.textContent = AI.hasGeminiKey() ? 'Gemini AI' : 'Base Local';
+  badge?.classList.toggle('ai-active', AI.hasGeminiKey());
 }
 
 // ══════════════════════════════════════════════
@@ -583,43 +951,34 @@ function updateAPIStatus() {
 function setupVoiceInput() {
   const voiceBtn = document.getElementById('voiceMsgBtn');
   if (!voiceBtn) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { voiceBtn.style.display = 'none'; return; }
 
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    voiceBtn.style.display = 'none';
-    return;
-  }
-
-  const recognition = new SpeechRecognition();
+  const recognition = new SR();
   recognition.lang = 'pt-BR';
   recognition.continuous = false;
   recognition.interimResults = false;
   let listening = false;
 
   voiceBtn.addEventListener('click', () => {
-    if (listening) {
-      recognition.stop();
-      return;
-    }
+    if (listening) { recognition.stop(); return; }
     recognition.start();
     listening = true;
     voiceBtn.classList.add('voice-active');
     voiceBtn.textContent = '🔴';
   });
 
-  recognition.onresult = (e) => {
-    const transcript = e.results[0][0].transcript;
-    messageInput.value = transcript;
+  recognition.onresult = e => {
+    const t = e.results[0][0].transcript;
+    messageInput.value = t;
     sendBtn.disabled = false;
-    processMessage(transcript);
+    processMessage(t);
   };
-
   recognition.onend = () => {
     listening = false;
     voiceBtn.classList.remove('voice-active');
     voiceBtn.textContent = '🎤';
   };
-
   recognition.onerror = () => {
     listening = false;
     voiceBtn.classList.remove('voice-active');
@@ -628,28 +987,70 @@ function setupVoiceInput() {
 }
 
 // ══════════════════════════════════════════════
+// SIDEBAR MOBILE
+// ══════════════════════════════════════════════
+function openSidebar() {
+  sidebar?.classList.add('open');
+  sidebarOverlay?.classList.add('visible');
+  sidebarOverlay?.setAttribute('aria-hidden', 'false');
+}
+function closeSidebar() {
+  sidebar?.classList.remove('open');
+  sidebarOverlay?.classList.remove('visible');
+  sidebarOverlay?.setAttribute('aria-hidden', 'true');
+}
+
+// ══════════════════════════════════════════════
 // UTILITIES
 // ══════════════════════════════════════════════
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
-function escapeHTML(str) { return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-function setLanguage(mode) { /* placeholder for future modes */ }
+function escapeHTML(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function setLanguage(mode) { /* placeholder */ }
+
+function formatRelativeTime(ts) {
+  const diff = Date.now() - ts;
+  if (diff < 60000) return 'agora mesmo';
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}min atrás`;
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h atrás`;
+  if (diff < 604800000) return `${Math.floor(diff / 86400000)}d atrás`;
+  return new Date(ts).toLocaleDateString('pt-BR');
+}
 
 // ══════════════════════════════════════════════
-// EVENT LISTENERS
+// MIGRATE OLD METRICS FORMAT
+// ══════════════════════════════════════════════
+function migrateMetrics() {
+  // Old format had topics as array; new format as object
+  if (Array.isArray(metrics.topics)) {
+    const obj = {};
+    metrics.topics.forEach(t => { obj[t] = (obj[t] || 0) + 1; });
+    metrics.topics = obj;
+    localStorage.setItem('vp_metrics', JSON.stringify(metrics));
+  }
+}
+
+// ══════════════════════════════════════════════
+// EVENT LISTENERS — DOMContentLoaded
 // ══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-  // Input handling
+  migrateMetrics();
+
+  // ── Input ──
   messageInput.addEventListener('input', () => {
     sendBtn.disabled = !messageInput.value.trim();
     messageInput.style.height = 'auto';
     messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
   });
 
-  messageInput.addEventListener('keydown', (e) => {
+  messageInput.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (messageInput.value.trim()) {
-        processMessage(messageInput.value.trim());
+      const text = messageInput.value.trim();
+      if (text) {
+        processMessage(text);
         messageInput.value = '';
         messageInput.style.height = 'auto';
         sendBtn.disabled = true;
@@ -658,65 +1059,58 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   sendBtn.addEventListener('click', () => {
-    if (messageInput.value.trim()) {
-      processMessage(messageInput.value.trim());
+    const text = messageInput.value.trim();
+    if (text) {
+      processMessage(text);
       messageInput.value = '';
       messageInput.style.height = 'auto';
       sendBtn.disabled = true;
     }
   });
 
-  // New chat
-  newChatBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    conversationHistory = [];
-    
-    // Remove all dynamically added messages but keep fixed elements
-    const msgs = chatMessages.querySelectorAll('.message');
-    msgs.forEach(msg => msg.remove());
-    
-    if (welcomeScreen) welcomeScreen.style.display = '';
-    if (docAnalyzer) docAnalyzer.style.display = 'none';
-    
-    messageInput.value = '';
-    sendBtn.disabled = true;
+  // ── New Chat ──
+  newChatBtn.addEventListener('click', e => { e.preventDefault(); startNewChat(); });
+
+  // ── Clear History ──
+  clearHistoryBtn?.addEventListener('click', () => {
+    if (confirm('Apagar todo o histórico de conversas?')) {
+      ConversationStore.clear();
+      startNewChat();
+    }
   });
 
-  // Accessibility panel
-  accessibilityToggle.addEventListener('click', () => {
+  // ── Sidebar Mobile ──
+  sidebarToggle?.addEventListener('click', () => {
+    sidebar?.classList.contains('open') ? closeSidebar() : openSidebar();
+  });
+  sidebarOverlay?.addEventListener('click', closeSidebar);
+
+  // ── Accessibility panel ──
+  accessibilityToggle?.addEventListener('click', () => {
     const isOpen = a11yPanel.getAttribute('aria-hidden') === 'false';
     a11yPanel.setAttribute('aria-hidden', isOpen ? 'true' : 'false');
-    accessibilityToggle.setAttribute('aria-expanded', !isOpen);
+    accessibilityToggle.setAttribute('aria-expanded', (!isOpen).toString());
   });
-
-  document.getElementById('fontIncrease').addEventListener('click', () => {
+  document.getElementById('fontIncrease')?.addEventListener('click', () => {
     if (currentFontSize < 150) { currentFontSize += 10; applyFontSize(); }
   });
-  document.getElementById('fontDecrease').addEventListener('click', () => {
+  document.getElementById('fontDecrease')?.addEventListener('click', () => {
     if (currentFontSize > 70) { currentFontSize -= 10; applyFontSize(); }
   });
-
-  contrastToggle.addEventListener('click', () => {
-    isHighContrast = !isHighContrast;
-    applyContrast();
-  });
-
-  ttsToggle.addEventListener('click', () => {
+  contrastToggle?.addEventListener('click', () => { isHighContrast = !isHighContrast; applyContrast(); });
+  ttsToggle?.addEventListener('click', () => {
     autoTTS = !autoTTS;
-    ttsToggle.setAttribute('aria-checked', autoTTS);
-    localStorage.setItem('vp_autoTTS', autoTTS);
+    ttsToggle.setAttribute('aria-checked', autoTTS.toString());
+    localStorage.setItem('vp_autoTTS', autoTTS.toString());
+  });
+  themeToggleBtn?.addEventListener('click', () => {
+    isLightMode = !isLightMode;
+    localStorage.setItem('vp_theme', isLightMode ? 'light' : 'dark');
+    applyTheme();
   });
 
-  if (themeToggleBtn) {
-    themeToggleBtn.addEventListener('click', () => {
-      isLightMode = !isLightMode;
-      localStorage.setItem('vp_theme', isLightMode ? 'light' : 'dark');
-      applyTheme();
-    });
-  }
-
-  // Settings modal
-  settingsBtn.addEventListener('click', () => {
+  // ── Settings Modal ──
+  settingsBtn?.addEventListener('click', () => {
     settingsModal.setAttribute('aria-hidden', 'false');
     settingsModal.style.display = 'flex';
     const gInput = document.getElementById('geminiKeyInput');
@@ -725,125 +1119,102 @@ document.addEventListener('DOMContentLoaded', () => {
     if (AI.hasElevenLabsKey()) eInput.value = '••••••••••••';
     updateAPIStatus();
   });
-
-  settingsClose.addEventListener('click', () => {
-    settingsModal.setAttribute('aria-hidden', 'true');
-    settingsModal.style.display = 'none';
-  });
-
-  settingsModal.addEventListener('click', (e) => {
-    if (e.target === settingsModal) {
-      settingsModal.setAttribute('aria-hidden', 'true');
-      settingsModal.style.display = 'none';
-    }
-  });
-
-  document.getElementById('saveGeminiKey').addEventListener('click', () => {
+  settingsClose?.addEventListener('click', () => { settingsModal.setAttribute('aria-hidden','true'); settingsModal.style.display='none'; });
+  settingsModal?.addEventListener('click', e => { if (e.target === settingsModal) { settingsModal.setAttribute('aria-hidden','true'); settingsModal.style.display='none'; } });
+  document.getElementById('saveGeminiKey')?.addEventListener('click', () => {
     const val = document.getElementById('geminiKeyInput').value.trim();
     if (val && !val.startsWith('••')) { AI.setGeminiKey(val); }
     updateAPIStatus();
   });
-
-  document.getElementById('saveElevenLabsKey').addEventListener('click', () => {
+  document.getElementById('saveElevenLabsKey')?.addEventListener('click', () => {
     const val = document.getElementById('elevenLabsKeyInput').value.trim();
     if (val && !val.startsWith('••')) { AI.setElevenLabsKey(val); }
     updateAPIStatus();
   });
 
-  // User Guide Modal
-  if (guideBtn && guideModal && guideClose) {
-    guideBtn.addEventListener('click', () => {
-      guideModal.setAttribute('aria-hidden', 'false');
-      guideModal.style.display = 'flex';
-    });
-    guideClose.addEventListener('click', () => {
-      guideModal.setAttribute('aria-hidden', 'true');
-      guideModal.style.display = 'none';
-    });
-    guideModal.addEventListener('click', (e) => {
-      if (e.target === guideModal) {
-        guideModal.setAttribute('aria-hidden', 'true');
-        guideModal.style.display = 'none';
-      }
-    });
-  }
+  // ── Guide Modal ──
+  guideBtn?.addEventListener('click', () => { guideModal.setAttribute('aria-hidden','false'); guideModal.style.display='flex'; });
+  guideClose?.addEventListener('click', () => { guideModal.setAttribute('aria-hidden','true'); guideModal.style.display='none'; });
+  guideModal?.addEventListener('click', e => { if(e.target===guideModal){guideModal.setAttribute('aria-hidden','true');guideModal.style.display='none';} });
 
-  // About Modal
-  if (aboutBtn && aboutModal && aboutClose) {
-    aboutBtn.addEventListener('click', () => {
-      aboutModal.setAttribute('aria-hidden', 'false');
-      aboutModal.style.display = 'flex';
-    });
-    aboutClose.addEventListener('click', () => {
-      aboutModal.setAttribute('aria-hidden', 'true');
-      aboutModal.style.display = 'none';
-    });
-    aboutModal.addEventListener('click', (e) => {
-      if (e.target === aboutModal) {
-        aboutModal.setAttribute('aria-hidden', 'true');
-        aboutModal.style.display = 'none';
-      }
-    });
-  }
+  // ── About Modal ──
+  aboutBtn?.addEventListener('click', () => { aboutModal.setAttribute('aria-hidden','false'); aboutModal.style.display='flex'; });
+  aboutClose?.addEventListener('click', () => { aboutModal.setAttribute('aria-hidden','true'); aboutModal.style.display='none'; });
+  aboutModal?.addEventListener('click', e => { if(e.target===aboutModal){aboutModal.setAttribute('aria-hidden','true');aboutModal.style.display='none';} });
 
-  // Topic Search & Shortcut
-  if (topicSearchInput) {
-    topicSearchInput.addEventListener('input', (e) => {
-      const query = e.target.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      topicBtns.forEach(btn => {
-        const text = btn.textContent.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        if (text.includes(query)) {
-          btn.style.display = 'flex';
-        } else {
-          btn.style.display = 'none';
+  // ── Geo Modal ──
+  geoClose?.addEventListener('click', () => { geoModal.setAttribute('aria-hidden','true'); geoModal.style.display='none'; });
+  geoModal?.addEventListener('click', e => { if(e.target===geoModal){geoModal.setAttribute('aria-hidden','true');geoModal.style.display='none';} });
+  document.getElementById('geoSearchBtn')?.addEventListener('click', searchByGeolocation);
+  document.getElementById('geoRetryBtn')?.addEventListener('click', () => showGeoState('idle'));
+  document.getElementById('geoCepBtn')?.addEventListener('click', () => searchByCEP());
+  document.getElementById('geoCepInput')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') searchByCEP();
+  });
+
+  // Geo filter buttons
+  document.getElementById('geoFilterRow')?.addEventListener('click', e => {
+    const btn = e.target.closest('.geo-filter-btn');
+    if (!btn) return;
+    document.querySelectorAll('.geo-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderFacilityList(btn.dataset.filter);
+  });
+
+  // ── Topic Search + Shortcut ──
+  topicSearchInput?.addEventListener('input', e => {
+    const q = e.target.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    topicBtns.forEach(btn => {
+      const text = btn.textContent.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      btn.style.display = text.includes(q) ? 'flex' : 'none';
+    });
+  });
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      topicSearchInput?.focus();
+    }
+    if (e.key === 'Escape') {
+      [settingsModal, guideModal, aboutModal, geoModal].forEach(m => {
+        if (m && m.style.display === 'flex') {
+          m.setAttribute('aria-hidden','true');
+          m.style.display = 'none';
         }
       });
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        topicSearchInput.focus();
+      if (a11yPanel.getAttribute('aria-hidden') === 'false') {
+        a11yPanel.setAttribute('aria-hidden','true');
       }
-    });
-  }
-
-  // Document upload
-  dropZone.addEventListener('click', () => docFileInput.click());
-  dropZone.addEventListener('keydown', (e) => { if (e.key === 'Enter') docFileInput.click(); });
-
-  dropZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropZone.classList.add('drag-active');
+    }
   });
-  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-active'));
-  dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('drag-active');
+
+  // ── Document Upload ──
+  dropZone?.addEventListener('click', () => docFileInput.click());
+  dropZone?.addEventListener('keydown', e => { if (e.key === 'Enter') docFileInput.click(); });
+  dropZone?.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-active'); });
+  dropZone?.addEventListener('dragleave', () => dropZone.classList.remove('drag-active'));
+  dropZone?.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('drag-active');
     if (e.dataTransfer.files.length) handleFileUpload(e.dataTransfer.files[0]);
   });
+  docFileInput?.addEventListener('change', e => { if (e.target.files.length) handleFileUpload(e.target.files[0]); });
 
-  docFileInput.addEventListener('change', (e) => {
-    if (e.target.files.length) handleFileUpload(e.target.files[0]);
-  });
-
-  // Apply saved settings
+  // ── Apply saved settings ──
   applyFontSize();
   applyContrast();
   applyTheme();
-  if (autoTTS) ttsToggle.setAttribute('aria-checked', 'true');
+  if (autoTTS) ttsToggle?.setAttribute('aria-checked', 'true');
   updateDashboard();
   updateAPIStatus();
   setupVoiceInput();
+  renderConversationList();
 });
 
+// ══════════════════════════════════════════════
+// FILE UPLOAD
+// ══════════════════════════════════════════════
 async function handleFileUpload(file) {
   const validation = DocAnalyzer.validateFile(file);
-  if (!validation.valid) {
-    alert(validation.error);
-    return;
-  }
-
+  if (!validation.valid) { alert(validation.error); return; }
   uploadedFile = file;
   const preview = await DocAnalyzer.createPreview(file);
   if (preview) {
@@ -851,10 +1222,22 @@ async function handleFileUpload(file) {
     docPreview.style.display = 'block';
     dropZone.style.display = 'none';
   } else {
-    // PDF or non-image — just show name
     docPreviewImg.src = '';
     docPreview.style.display = 'block';
     dropZone.style.display = 'none';
-    docPreviewImg.alt = `Arquivo selecionado: ${file.name}`;
+    docPreviewImg.alt = `Arquivo: ${file.name}`;
   }
 }
+
+// ══════════════════════════════════════════════
+// GLOBAL EXPORTS (onclick handlers in HTML)
+// ══════════════════════════════════════════════
+window.startTopic = startTopic;
+window.handleChipClick = handleChipClick;
+window.toggleDocAnalyzer = toggleDocAnalyzer;
+window.analyzeUploadedDoc = analyzeUploadedDoc;
+window.speakMessage = speakMessage;
+window.setLanguage = setLanguage;
+window.openGeoModal = openGeoModal;
+window.openGeoModalWithCEP = openGeoModalWithCEP;
+window.deleteConversation = deleteConversation;
