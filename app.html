@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="VozPública — Converse com IA para entender seus direitos e acessar serviços públicos.">
+  <title>VozPública — Assistente de Direitos e Serviços</title>
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#3ecfb2">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📢</text></svg>">
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <header class="topbar" role="banner">
+    <a href="index.html" class="topbar-logo" aria-label="Voltar ao início do VozPública">
+      <div class="logo-icon" style="background:none;box-shadow:none;padding:2px" aria-hidden="true"><img src="assets/logo.png" alt="VozPública logo" style="width:32px;height:32px;object-fit:contain;border-radius:6px"></div>
+      Voz<span>Pública</span>
+    </a>
+    <div class="topbar-divider" aria-hidden="true"></div>
+    <span class="topbar-title">Assistente de Direitos e Serviços Públicos</span>
+    <div class="topbar-actions">
+      <div class="status-badge" id="aiStatus" role="status" aria-live="polite">
+        <div class="status-dot" aria-hidden="true"></div>
+        <span id="aiStatusText">IA Online</span>
+      </div>
+      <button class="topbar-btn" id="accessibilityToggle" aria-label="Abrir painel de acessibilidade" aria-expanded="false">
+        ♿ Acessibilidade
+      </button>
+      <button class="topbar-btn" id="settingsBtn" aria-label="Configurações de API">
+        ⚙️ Config
+      </button>
+      <a href="index.html" class="topbar-btn" aria-label="Ver sobre o VozPública">ℹ️ Sobre</a>
+    </div>
+  </header>
+
+  <!-- ACCESSIBILITY PANEL -->
+  <aside class="a11y-panel" id="a11yPanel" role="dialog" aria-modal="false" aria-label="Opções de acessibilidade" aria-hidden="true">
+    <p class="a11y-title">⚙️ Opções de Acessibilidade</p>
+    <div class="a11y-option">
+      <span class="a11y-label">Tamanho da fonte</span>
+      <div class="a11y-control">
+        <button class="a11y-btn" id="fontDecrease" aria-label="Diminuir fonte">−</button>
+        <span class="a11y-value" id="fontSizeLabel" aria-live="polite">100%</span>
+        <button class="a11y-btn" id="fontIncrease" aria-label="Aumentar fonte">+</button>
+      </div>
+    </div>
+    <div class="a11y-option">
+      <span class="a11y-label">Alto contraste</span>
+      <button class="toggle-switch" id="contrastToggle" role="switch" aria-checked="false" aria-label="Ativar alto contraste">
+        <div class="toggle-knob"></div>
+      </button>
+    </div>
+    <div class="a11y-option">
+      <span class="a11y-label">Leitura automática (ElevenLabs)</span>
+      <button class="toggle-switch" id="ttsToggle" role="switch" aria-checked="false" aria-label="Ativar leitura em voz alta das respostas">
+        <div class="toggle-knob"></div>
+      </button>
+    </div>
+  </aside>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-overlay" id="settingsModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="modal-header">
+        <h2 id="settingsTitle" class="modal-title">⚙️ Configurações de IA</h2>
+        <button class="modal-close" id="settingsClose" aria-label="Fechar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-group">
+          <label for="geminiKeyInput" class="setting-label">
+            🤖 Google Gemini API Key
+            <span class="setting-hint">Grátis em <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com</a></span>
+          </label>
+          <div class="setting-input-row">
+            <input type="password" id="geminiKeyInput" class="setting-input" placeholder="Cole sua chave aqui..." autocomplete="off">
+            <button class="setting-save-btn" id="saveGeminiKey">Salvar</button>
+          </div>
+          <div class="setting-status" id="geminiStatus">❌ Não configurado — usando base local</div>
+        </div>
+        <div class="setting-group">
+          <label for="elevenLabsKeyInput" class="setting-label">
+            🔊 ElevenLabs API Key
+            <span class="setting-hint">Grátis em <a href="https://elevenlabs.io" target="_blank" rel="noopener">elevenlabs.io</a></span>
+          </label>
+          <div class="setting-input-row">
+            <input type="password" id="elevenLabsKeyInput" class="setting-input" placeholder="Cole sua chave aqui..." autocomplete="off">
+            <button class="setting-save-btn" id="saveElevenLabsKey">Salvar</button>
+          </div>
+          <div class="setting-status" id="elevenLabsStatus">❌ Não configurado — usando voz do navegador</div>
+        </div>
+        <div class="setting-note">
+          🔒 Suas chaves são salvas <strong>apenas no seu navegador</strong> (localStorage) e nunca são enviadas para servidores externos.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP LAYOUT -->
+  <div class="app-layout" role="main">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar" role="navigation" aria-label="Navegação do aplicativo">
+      <div class="sidebar-header">
+        <p class="sidebar-label">Conversas</p>
+        <button class="new-chat-btn" id="newChatBtn" aria-label="Iniciar nova conversa">
+          ✨ Nova Conversa
+        </button>
+      </div>
+      <div class="topics-section">
+        <div class="topic-group">
+          <p class="topic-group-title">Categorias</p>
+          <button class="topic-btn" onclick="startTopic('inss')">
+            <span class="topic-icon" aria-hidden="true">🏛️</span> INSS &amp; Previdência
+          </button>
+          <button class="topic-btn" onclick="startTopic('saude')">
+            <span class="topic-icon" aria-hidden="true">🏥</span> Saúde Pública
+          </button>
+          <button class="topic-btn" onclick="startTopic('bolsa')">
+            <span class="topic-icon" aria-hidden="true">💚</span> Bolsa Família
+          </button>
+          <button class="topic-btn" onclick="startTopic('trabalho')">
+            <span class="topic-icon" aria-hidden="true">⚖️</span> Direitos Trabalhistas
+          </button>
+          <button class="topic-btn" onclick="startTopic('educacao')">
+            <span class="topic-icon" aria-hidden="true">🎓</span> Educação &amp; Bolsas
+          </button>
+          <button class="topic-btn" onclick="startTopic('habitacao')">
+            <span class="topic-icon" aria-hidden="true">🏘️</span> Habitação &amp; Moradia
+          </button>
+          <button class="topic-btn" onclick="startTopic('documentos')">
+            <span class="topic-icon" aria-hidden="true">📑</span> Documentos &amp; Registros
+          </button>
+          <button class="topic-btn" onclick="startTopic('idoso')">
+            <span class="topic-icon" aria-hidden="true">👴</span> Direitos do Idoso
+          </button>
+        </div>
+
+        <!-- IMPACT DASHBOARD -->
+        <div class="topic-group">
+          <p class="topic-group-title">📊 Impacto</p>
+          <div class="impact-mini-dashboard" id="impactDashboard">
+            <div class="mini-stat">
+              <span class="mini-stat-value" id="totalQueries">0</span>
+              <span class="mini-stat-label">Consultas realizadas</span>
+            </div>
+            <div class="mini-stat">
+              <span class="mini-stat-value" id="topicsExplored">0</span>
+              <span class="mini-stat-label">Tópicos explorados</span>
+            </div>
+            <div class="mini-stat">
+              <span class="mini-stat-value" id="docsAnalyzed">0</span>
+              <span class="mini-stat-label">Documentos analisados</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="sidebar-footer">
+        <div class="access-controls">
+          <button class="access-control-btn" id="docAnalyzerBtn" onclick="toggleDocAnalyzer()">
+            📄 Analisar Documento
+          </button>
+          <button class="access-control-btn" onclick="setLanguage('simples')">
+            📖 Linguagem Simples
+          </button>
+        </div>
+        <div class="powered-by">
+          Powered by <span class="pb-gemini">Gemini AI</span> · <span class="pb-eleven">ElevenLabs</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- CHAT AREA -->
+    <section class="chat-area" aria-label="Área de chat com VozPública">
+      <div class="chat-messages" id="chatMessages" role="log" aria-live="polite" aria-label="Mensagens da conversa">
+
+        <!-- WELCOME SCREEN -->
+        <div class="welcome-screen" id="welcomeScreen">
+          <div class="welcome-icon" role="img" aria-label="VozPública">📢</div>
+          <h1 class="welcome-title">Olá! Sou o <span class="gradient-text">VozPública</span></h1>
+          <p class="welcome-subtitle">
+            Estou aqui para te ajudar a entender seus direitos, acessar serviços públicos e navegar a burocracia brasileira. Como posso te ajudar hoje?
+          </p>
+          <div class="quick-grid" role="list" aria-label="Tópicos frequentes">
+            <button class="quick-card" onclick="startTopic('inss')" role="listitem">
+              <span class="quick-card-icon" aria-hidden="true">🏛️</span>
+              <span class="quick-card-title">Aposentadoria &amp; INSS</span>
+              <span class="quick-card-desc">Saiba quando pode se aposentar e como solicitar</span>
+            </button>
+            <button class="quick-card" onclick="startTopic('bolsa')" role="listitem">
+              <span class="quick-card-icon" aria-hidden="true">💚</span>
+              <span class="quick-card-title">Bolsa Família</span>
+              <span class="quick-card-desc">Descubra se você tem direito ao benefício</span>
+            </button>
+            <button class="quick-card" onclick="startTopic('saude')" role="listitem">
+              <span class="quick-card-icon" aria-hidden="true">🏥</span>
+              <span class="quick-card-title">Saúde Pública</span>
+              <span class="quick-card-desc">Seus direitos no SUS e como acessar</span>
+            </button>
+            <button class="quick-card" onclick="toggleDocAnalyzer()" role="listitem">
+              <span class="quick-card-icon" aria-hidden="true">📄</span>
+              <span class="quick-card-title">Analisar Documento</span>
+              <span class="quick-card-desc">Envie uma foto de documento e receba explicação simples</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- DOC ANALYZER -->
+        <div class="doc-analyzer" id="docAnalyzer" style="display:none">
+          <div class="doc-analyzer-card">
+            <div class="doc-analyzer-header">
+              <span>📄 Analisador de Documentos</span>
+              <button class="doc-close" onclick="toggleDocAnalyzer()" aria-label="Fechar analisador">&times;</button>
+            </div>
+            <div class="doc-drop-zone" id="dropZone" role="button" tabindex="0" aria-label="Clique ou arraste um documento para analisar">
+              <div class="doc-drop-icon">📎</div>
+              <p class="doc-drop-text">Arraste uma <strong>foto ou imagem</strong> de um documento governamental aqui</p>
+              <p class="doc-drop-hint">ou clique para selecionar • JPG, PNG, WebP, PDF • máx 10MB</p>
+              <input type="file" id="docFileInput" accept="image/*,.pdf" style="display:none" aria-label="Selecionar arquivo">
+            </div>
+            <div class="doc-preview" id="docPreview" style="display:none">
+              <img id="docPreviewImg" alt="Preview do documento" src="">
+              <button class="doc-analyze-btn" id="analyzeBtn" onclick="analyzeUploadedDoc()">🔍 Analisar com IA</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- INPUT AREA -->
+      <div class="input-area" role="form" aria-label="Enviar mensagem para o VozPública">
+        <div class="input-wrapper">
+          <textarea
+            id="messageInput"
+            placeholder="Digite sua dúvida aqui... ex: 'Tenho direito ao BPC?' ou 'Como emitir minha certidão de nascimento?'"
+            rows="1"
+            aria-label="Campo de texto para sua pergunta"
+          ></textarea>
+          <div class="input-actions">
+            <button class="input-btn" id="voiceMsgBtn" title="Entrada por voz" aria-label="Ativar entrada por voz">🎤</button>
+            <button class="input-btn send-btn" id="sendBtn" title="Enviar mensagem" aria-label="Enviar mensagem" disabled>
+              ↑
+            </button>
+          </div>
+        </div>
+        <div class="input-hint">
+          <span>💡 Pode perguntar em linguagem simples</span>
+          <span><kbd>Enter</kbd> enviar · <kbd>Shift+Enter</kbd> nova linha</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL -->
+    <aside class="right-panel" aria-label="Serviços e links rápidos">
+      <div class="right-panel-header">
+        <p class="right-panel-title">🔗 Serviços Relacionados</p>
+        <p class="right-panel-sub">Links diretos para portais oficiais</p>
+      </div>
+      <div class="service-list" role="list" aria-label="Lista de serviços públicos">
+        <a href="https://meu.inss.gov.br" target="_blank" rel="noopener" class="service-item" role="listitem">
+          <span class="service-icon" aria-hidden="true">🏛️</span>
+          <div class="service-info"><div class="service-name">Meu INSS</div><div class="service-desc">Aposentadoria, benefícios, extratos</div></div>
+          <span class="service-arrow" aria-hidden="true">→</span>
+        </a>
+        <a href="https://www.gov.br/cidadania/pt-br/acoes-e-programas/bolsa-familia" target="_blank" rel="noopener" class="service-item" role="listitem">
+          <span class="service-icon" aria-hidden="true">💚</span>
+          <div class="service-info"><div class="service-name">Bolsa Família</div><div class="service-desc">Cadastro, parcelas, requisitos</div></div>
+          <span class="service-arrow" aria-hidden="true">→</span>
+        </a>
+        <a href="https://sisu.mec.gov.br" target="_blank" rel="noopener" class="service-item" role="listitem">
+          <span class="service-icon" aria-hidden="true">🎓</span>
+          <div class="service-info"><div class="service-name">SISU / PROUNI</div><div class="service-desc">Bolsas e vagas universitárias</div></div>
+          <span class="service-arrow" aria-hidden="true">→</span>
+        </a>
+        <a href="https://www.gov.br/esocial" target="_blank" rel="noopener" class="service-item" role="listitem">
+          <span class="service-icon" aria-hidden="true">⚖️</span>
+          <div class="service-info"><div class="service-name">eSocial / FGTS</div><div class="service-desc">Extrato, saques, regularização</div></div>
+          <span class="service-arrow" aria-hidden="true">→</span>
+        </a>
+        <a href="https://www.gov.br/saude" target="_blank" rel="noopener" class="service-item" role="listitem">
+          <span class="service-icon" aria-hidden="true">🏥</span>
+          <div class="service-info"><div class="service-name">SUS Digital</div><div class="service-desc">Cartão SUS, agendamentos, vacinas</div></div>
+          <span class="service-arrow" aria-hidden="true">→</span>
+        </a>
+        <a href="https://www.gov.br/pt-br/servicos/emitir-segunda-via-de-cpf" target="_blank" rel="noopener" class="service-item" role="listitem">
+          <span class="service-icon" aria-hidden="true">📑</span>
+          <div class="service-info"><div class="service-name">CPF / Documentos</div><div class="service-desc">Regularizar, emitir, atualizar</div></div>
+          <span class="service-arrow" aria-hidden="true">→</span>
+        </a>
+        <a href="https://www.gov.br/previdencia/pt-br/assuntos/bpc-loas" target="_blank" rel="noopener" class="service-item" role="listitem">
+          <span class="service-icon" aria-hidden="true">👴</span>
+          <div class="service-info"><div class="service-name">BPC / LOAS</div><div class="service-desc">Benefício para idosos e PcD</div></div>
+          <span class="service-arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+      <div class="right-panel-footer">
+        <p class="disclaimer">
+          <span class="disclaimer-icon" aria-hidden="true">ℹ️</span>
+          <span>As informações do VozPública são educativas. Para decisões importantes, consulte um profissional ou órgão oficial.</span>
+        </p>
+      </div>
+    </aside>
+
+  </div>
+
+  <script src="js/ai.js"></script>
+  <script src="js/analyzer.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log('SW registered'))
+        .catch(err => console.log('SW error:', err));
+    }
+  </script>
+</body>
+</html>

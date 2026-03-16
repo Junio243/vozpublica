@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="VozPública — IA que aproxima brasileiros dos seus direitos e serviços públicos. Atendimento acessível, simples e gratuito.">
+  <title>VozPública — Tecnologia que Faz a Diferença</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#3ecfb2">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📢</text></svg>">
+</head>
+<body>
+
+  <!-- Background orbs -->
+  <div class="orb orb-1" aria-hidden="true"></div>
+  <div class="orb orb-2" aria-hidden="true"></div>
+  <div class="orb orb-3" aria-hidden="true"></div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar" role="navigation" aria-label="Navegação principal">
+    <div class="container">
+      <div class="nav-inner">
+        <a href="#" class="logo" aria-label="VozPública - Página inicial">
+          <div class="logo-icon" style="background:none;box-shadow:none;padding:0" aria-hidden="true"><img src="assets/logo.png" alt="VozPública logo" style="width:36px;height:36px;object-fit:contain;border-radius:8px"></div>
+          Voz<span>Pública</span>
+        </a>
+        <ul class="nav-links" role="list">
+          <li><a href="#como-funciona">Como Funciona</a></li>
+          <li><a href="#impacto">Impacto</a></li>
+          <li><a href="#demo">Demo</a></li>
+          <li><a href="#tecnologia">Tecnologia</a></li>
+        </ul>
+        <div class="nav-cta">
+          <a href="app.html" class="btn btn-primary" id="nav-cta-btn" aria-label="Acessar o aplicativo VozPública">
+            Acessar App ↗
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="inicio" aria-labelledby="hero-title">
+    <div class="container">
+      <div class="hero-grid">
+        <div class="hero-content">
+          <div class="hero-eyebrow">
+            <span class="badge" role="status">🏆 Projeto de Impacto Social · VozPública</span>
+          </div>
+          <h1 class="hero-title" id="hero-title">
+            A <span class="gradient-text">voz</span> que<br>
+            todo cidadão<br>merece ter
+          </h1>
+          <p class="hero-desc">
+            O <strong>VozPública</strong> usa inteligência artificial para ajudar brasileiros a acessar serviços públicos, entender benefícios sociais e navegar a burocracia com linguagem simples e acessível.
+          </p>
+          <div class="hero-actions">
+            <a href="app.html" class="btn btn-primary btn-lg" id="hero-cta-primary" aria-label="Testar o VozPública gratuitamente">
+              <span>🚀</span> Testar Gratuitamente
+            </a>
+            <a href="#demo" class="btn btn-ghost btn-lg" id="hero-cta-demo" aria-label="Ver demonstração do VozPública">
+              <span>▶</span> Ver Demo
+            </a>
+          </div>
+          <div class="hero-stats" role="group" aria-label="Estatísticas de impacto">
+            <div class="stat-item">
+              <span class="stat-number gradient-text" id="stat-1">70M+</span>
+              <span class="stat-label">Brasileiros impactados</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number gradient-text" id="stat-2">12+</span>
+              <span class="stat-label">Serviços públicos</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number gradient-text" id="stat-3">100%</span>
+              <span class="stat-label">Gratuito e acessível</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="hero-image-wrapper">
+            <img src="assets/hero.png" alt="Pessoas diversas conectadas digitalmente — VozPública" width="600">
+            <div class="floating-card floating-card-1" role="complementary" aria-label="Métrica de acesso aos direitos">
+              <div class="fc-label">Acesso aos direitos</div>
+              <div class="fc-value"><span class="highlight">94%</span> de precisão</div>
+              <div class="fc-bar">
+                <div class="fc-bar-fill" style="--w: 94%"></div>
+              </div>
+            </div>
+            <div class="floating-card floating-card-2" role="complementary" aria-label="Status da IA ativa">
+              <div class="fc-ai-icon" aria-hidden="true">✨</div>
+              <div class="fc-label">VozPública</div>
+              <div class="fc-value">Ativo agora</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="como-funciona" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="badge">✨ Funcionalidades</span>
+        <h2 class="section-title" id="features-title" style="margin-top:16px">
+          O que o <span class="gradient-text">VozPública</span> faz por você
+        </h2>
+        <p class="section-desc">
+          Uma plataforma completa para democratizar o acesso a serviços públicos e informações sobre direitos cidadãos no Brasil.
+        </p>
+      </div>
+      <div class="features-grid">
+        <article class="feature-card reveal reveal-delay-1">
+          <div class="feature-icon fi-teal" aria-hidden="true">🧠</div>
+          <h3 class="feature-title">IA Conversacional</h3>
+          <p class="feature-desc">
+            Converse em português simples. A IA entende mesmo com erros de digitação ou linguagem informal, como se fosse um amigo especialista.
+          </p>
+        </article>
+        <article class="feature-card reveal reveal-delay-2">
+          <div class="feature-icon fi-purple" aria-hidden="true">📋</div>
+          <h3 class="feature-title">Benefícios Sociais</h3>
+          <p class="feature-desc">
+            Saiba tudo sobre INSS, Bolsa Família, BPC, PIS/PASEP, FGTS e outros benefícios de forma clara e sem juridiquês.
+          </p>
+        </article>
+        <article class="feature-card reveal reveal-delay-3">
+          <div class="feature-icon fi-gold" aria-hidden="true">🏥</div>
+          <h3 class="feature-title">Saúde Pública</h3>
+          <p class="feature-desc">
+            Encontre UBSs próximas, entenda seus direitos no SUS, agende consultas e saiba como funciona a rede de saúde pública.
+          </p>
+        </article>
+        <article class="feature-card reveal reveal-delay-1">
+          <div class="feature-icon fi-teal" aria-hidden="true">⚖️</div>
+          <h3 class="feature-title">Direitos Trabalhistas</h3>
+          <p class="feature-desc">
+            Entenda seus direitos como trabalhador: férias, 13º salário, FGTS, rescisão, seguro-desemprego e muito mais.
+          </p>
+        </article>
+        <article class="feature-card reveal reveal-delay-2">
+          <div class="feature-icon fi-purple" aria-hidden="true">🎓</div>
+          <h3 class="feature-title">Educação e Bolsas</h3>
+          <p class="feature-desc">
+            Descubra oportunidades de bolsas de estudo, PROUNI, FIES, EJA e programas educacionais disponíveis para você.
+          </p>
+        </article>
+        <article class="feature-card reveal reveal-delay-3">
+          <div class="feature-icon fi-gold" aria-hidden="true">♿</div>
+          <h3 class="feature-title">100% Acessível</h3>
+          <p class="feature-desc">
+            Interface com fonte ajustável, alto contraste, suporte a leitores de tela e compatibilidade com língua de sinais (LIBRAS).
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section section-alt" aria-labelledby="steps-title">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="badge">🗺️ Passo a Passo</span>
+        <h2 class="section-title" id="steps-title" style="margin-top:16px">
+          Simples como uma <span class="gradient-text">conversa</span>
+        </h2>
+        <p class="section-desc">
+          Sem cadastro, sem burocracia. Em 4 passos você já tem sua resposta.
+        </p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card reveal reveal-delay-1">
+          <div class="step-number" aria-label="Passo 1">1</div>
+          <h3 class="step-title">Acesse o app</h3>
+          <p class="step-desc">Abra o VozPública no celular ou computador. Nenhum cadastro necessário.</p>
+        </div>
+        <div class="step-card reveal reveal-delay-2">
+          <div class="step-number" aria-label="Passo 2">2</div>
+          <h3 class="step-title">Faça sua pergunta</h3>
+          <p class="step-desc">Digite ou fale sua dúvida em português, como se estivesse conversando com um amigo.</p>
+        </div>
+        <div class="step-card reveal reveal-delay-3">
+          <div class="step-number" aria-label="Passo 3">3</div>
+          <h3 class="step-title">Receba a resposta</h3>
+          <p class="step-desc">A IA analisa e responde com linguagem simples, com links e próximos passos práticos.</p>
+        </div>
+        <div class="step-card reveal reveal-delay-4">
+          <div class="step-number" aria-label="Passo 4">4</div>
+          <h3 class="step-title">Seja encaminhado</h3>
+          <p class="step-desc">Se necessitar, receba encaminhamento para o órgão correto com script de atendimento pronto.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- IMPACT -->
+  <section class="section" id="impacto" aria-labelledby="impact-title">
+    <div class="container">
+      <div class="impact-grid">
+        <div class="impact-content reveal">
+          <span class="badge" style="margin-bottom:20px">📊 Impacto Social</span>
+          <h2 class="impact-title" id="impact-title">
+            Chegando a quem<br><span class="gradient-text">mais precisa</span>
+          </h2>
+          <p class="impact-desc">
+            No Brasil, a desigualdade de acesso à informação é um problema crítico. Milhões de cidadãos perdem benefícios por não saber a que têm direito. O VozPública quer mudar isso.
+          </p>
+          <ul class="impact-list" role="list">
+            <li class="impact-item">
+              <div class="impact-check" aria-hidden="true">✓</div>
+              <p class="impact-item-text"><strong>70 milhões de brasileiros</strong> com baixa digitalização são o público-alvo prioritário da plataforma</p>
+            </li>
+            <li class="impact-item">
+              <div class="impact-check" aria-hidden="true">✓</div>
+              <p class="impact-item-text"><strong>Parcerias com prefeituras</strong> e CRAS para ampliar o alcance em regiões vulneráveis</p>
+            </li>
+            <li class="impact-item">
+              <div class="impact-check" aria-hidden="true">✓</div>
+              <p class="impact-item-text"><strong>Integração futura com Gov.br</strong> para autenticação e serviços digitais do governo federal</p>
+            </li>
+            <li class="impact-item">
+              <div class="impact-check" aria-hidden="true">✓</div>
+              <p class="impact-item-text"><strong>Modelo open-source</strong> para municípios adaptarem e implantarem localmente sem custo</p>
+            </li>
+          </ul>
+        </div>
+        <div class="impact-stats-grid reveal">
+          <div class="impact-stat-card">
+            <span class="isn-number gradient-text">R$42bi</span>
+            <span class="isn-label">em benefícios não resgatados anualmente no Brasil</span>
+          </div>
+          <div class="impact-stat-card">
+            <span class="isn-number gradient-text">67%</span>
+            <span class="isn-label">dos idosos não sabem como acessar serviços digitais</span>
+          </div>
+          <div class="impact-stat-card">
+            <span class="isn-number gradient-text">3min</span>
+            <span class="isn-label">tempo médio para resolver uma dúvida com VozPública</span>
+          </div>
+          <div class="impact-stat-card">
+            <span class="isn-number gradient-text">5x</span>
+            <span class="isn-label">mais eficiente que atendimento presencial nos CRAS</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHATBOT DEMO -->
+  <section class="section section-alt" id="demo" aria-labelledby="demo-title">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="badge">💬 Demonstração</span>
+        <h2 class="section-title" id="demo-title" style="margin-top:16px">
+          Veja o <span class="gradient-text">VozPública</span> em ação
+        </h2>
+        <p class="section-desc">
+          Uma conversa real mostrando como a plataforma ajuda cidadãos a entender seus direitos.
+        </p>
+      </div>
+      <div class="demo-wrapper reveal">
+        <div class="demo-topbar" aria-label="Barra de status do chat">
+          <div class="demo-dots" aria-hidden="true">
+            <div class="demo-dot"></div>
+            <div class="demo-dot"></div>
+            <div class="demo-dot"></div>
+          </div>
+          <span class="demo-title">VozPública — Assistente de Direitos</span>
+          <span class="demo-status" role="status" aria-live="polite">Online</span>
+        </div>
+        <div class="demo-chat" id="demo-chat" role="log" aria-label="Conversa demonstrativa" aria-live="polite">
+          <div class="chat-msg ai">
+            <div class="chat-avatar ai" aria-label="VozPública">📢</div>
+            <div class="chat-bubble">
+              <strong>Olá! 👋 Sou o VozPública.</strong><br>
+              Estou aqui para te ajudar a entender seus direitos e acessar serviços públicos. O que gostaria de saber hoje?
+              <div class="chat-chips" role="list" aria-label="Sugestões de perguntas">
+                <button class="chip" onclick="simulateChat('INSS')" aria-label="Perguntar sobre INSS">💼 INSS</button>
+                <button class="chip" onclick="simulateChat('saude')" aria-label="Perguntar sobre saúde">🏥 Saúde</button>
+                <button class="chip" onclick="simulateChat('bolsa')" aria-label="Perguntar sobre Bolsa Família">📋 Bolsa Família</button>
+                <button class="chip" onclick="simulateChat('trabalho')" aria-label="Perguntar sobre trabalho">⚖️ Trabalho</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center; margin-top:32px">
+        <a href="app.html" class="btn btn-primary btn-lg" id="demo-full-app" aria-label="Acessar o VozPública completo">
+          🚀 Acessar o VozPública Completo
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- TECHNOLOGY -->
+  <section class="section" id="tecnologia" aria-labelledby="tech-title">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="badge">⚙️ Stack Técnica</span>
+        <h2 class="section-title" id="tech-title" style="margin-top:16px">
+          Tecnologia de <span class="gradient-text">ponta</span><br>a serviço da cidadania
+        </h2>
+      </div>
+      <div class="tech-grid">
+        <div class="tech-card reveal reveal-delay-1">
+          <span class="tech-emoji" aria-hidden="true">✨</span>
+          <div class="tech-name">Gemini AI</div>
+          <div class="tech-desc">Motor de linguagem natural para compreensão de perguntas em português</div>
+        </div>
+        <div class="tech-card reveal reveal-delay-2">
+          <span class="tech-emoji" aria-hidden="true">🌐</span>
+          <div class="tech-name">HTML5 + CSS3</div>
+          <div class="tech-desc">Interface responsiva e acessível, funciona em qualquer dispositivo</div>
+        </div>
+        <div class="tech-card reveal reveal-delay-3">
+          <span class="tech-emoji" aria-hidden="true">⚡</span>
+          <div class="tech-name">JavaScript ES6+</div>
+          <div class="tech-desc">Lógica offline-first para funcionar mesmo com conexão instável</div>
+        </div>
+        <div class="tech-card reveal reveal-delay-4">
+          <span class="tech-emoji" aria-hidden="true">♿</span>
+          <div class="tech-name">WCAG 2.1 AA</div>
+          <div class="tech-desc">Acessibilidade total para pessoas com deficiência visual, auditiva e motora</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section" aria-labelledby="cta-title">
+    <div class="container">
+      <h2 class="cta-title" id="cta-title">
+        Dê <span class="gradient-text">voz</span> aos seus<br>direitos hoje mesmo
+      </h2>
+      <p class="cta-desc">
+        Experimente agora mesmo, sem cadastro e de forma completamente gratuita.
+      </p>
+      <div class="cta-actions">
+        <a href="app.html" class="btn btn-primary btn-lg" id="cta-main" aria-label="Começar a usar o VozPública agora">🚀 Começar Agora</a>
+        <a href="#impacto" class="btn btn-outline btn-lg" id="cta-impact" aria-label="Ver dados de impacto social">📊 Ver Dados de Impacto</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="logo" style="font-size:1.1rem">
+          <div class="logo-icon" style="width:32px;height:32px;background:none;box-shadow:none;padding:0" aria-hidden="true"><img src="assets/logo.png" alt="" style="width:30px;height:30px;object-fit:contain;border-radius:6px"></div>
+          Voz<span>Pública</span>
+        </div>
+        <p class="footer-copy">© 2026 VozPública · Projeto de Impacto Social · Construído com 💚 para o Brasil</p>
+        <nav class="footer-links" aria-label="Links do rodapé">
+          <a href="#inicio">Início</a>
+          <a href="#impacto">Impacto</a>
+          <a href="app.html">App</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

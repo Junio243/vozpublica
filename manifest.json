@@ -1,0 +1,23 @@
+{
+  "name": "VozPública",
+  "short_name": "VozPública",
+  "description": "IA que dá voz aos seus direitos. Assistente digital para cidadãos brasileiros acessarem serviços públicos.",
+  "start_url": "./app.html",
+  "display": "standalone",
+  "background_color": "#080b14",
+  "theme_color": "#3ecfb2",
+  "orientation": "any",
+  "lang": "pt-BR",
+  "categories": ["social", "education", "government"],
+  "icons": [
+    {
+      "src": "assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
