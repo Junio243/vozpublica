@@ -198,6 +198,9 @@ const guideBtn = document.getElementById('guideBtn');
 const guideClose = document.getElementById('guideClose');
 const topicSearchInput = document.getElementById('topicSearchInput');
 const topicBtns = document.querySelectorAll('#topicGroupList .topic-btn');
+const aboutModal = document.getElementById('aboutModal');
+const aboutBtn = document.getElementById('aboutBtn');
+const aboutClose = document.getElementById('aboutClose');
 
 // ══════════════════════════════════════════════
 // INTENT DETECTION — Local KB fallback
@@ -664,13 +667,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // New chat
-  newChatBtn.addEventListener('click', () => {
+  newChatBtn.addEventListener('click', (e) => {
+    e.preventDefault();
     conversationHistory = [];
-    chatMessages.innerHTML = '';
-    if (welcomeScreen) {
-      chatMessages.appendChild(welcomeScreen);
-      welcomeScreen.style.display = '';
-    }
+    
+    // Remove all dynamically added messages but keep fixed elements
+    const msgs = chatMessages.querySelectorAll('.message');
+    msgs.forEach(msg => msg.remove());
+    
+    if (welcomeScreen) welcomeScreen.style.display = '';
+    if (docAnalyzer) docAnalyzer.style.display = 'none';
+    
     messageInput.value = '';
     sendBtn.disabled = true;
   });
@@ -757,6 +764,24 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.target === guideModal) {
         guideModal.setAttribute('aria-hidden', 'true');
         guideModal.style.display = 'none';
+      }
+    });
+  }
+
+  // About Modal
+  if (aboutBtn && aboutModal && aboutClose) {
+    aboutBtn.addEventListener('click', () => {
+      aboutModal.setAttribute('aria-hidden', 'false');
+      aboutModal.style.display = 'flex';
+    });
+    aboutClose.addEventListener('click', () => {
+      aboutModal.setAttribute('aria-hidden', 'true');
+      aboutModal.style.display = 'none';
+    });
+    aboutModal.addEventListener('click', (e) => {
+      if (e.target === aboutModal) {
+        aboutModal.setAttribute('aria-hidden', 'true');
+        aboutModal.style.display = 'none';
       }
     });
   }

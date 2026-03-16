@@ -39,7 +39,7 @@
       <button class="topbar-btn" id="settingsBtn" aria-label="Configurações de API">
         ⚙️ Config
       </button>
-      <a href="index.html" class="topbar-btn" aria-label="Ver sobre o VozPública">ℹ️ Sobre</a>
+      <button class="topbar-btn" id="aboutBtn" aria-label="Sobre o VozPública">ℹ️ Sobre</button>
     </div>
   </header>
 
@@ -139,6 +139,27 @@
     </div>
   </div>
 
+  <!-- ABOUT MODAL -->
+  <div class="modal-overlay" id="aboutModal" aria-hidden="true">
+    <div class="modal guide-modal" role="dialog" aria-modal="true" aria-labelledby="aboutTitle" style="max-width: 500px">
+      <div class="modal-header">
+        <h2 id="aboutTitle" class="modal-title">ℹ️ Sobre o VozPública</h2>
+        <button class="modal-close" id="aboutClose" aria-label="Fechar">&times;</button>
+      </div>
+      <div class="modal-body guide-body">
+        <p style="margin-bottom: 16px; color: var(--text-secondary); line-height: 1.6;">
+          O <strong>VozPública</strong> é um assistente de inteligência artificial criado para democratizar o acesso à informação sobre direitos e serviços públicos no Brasil.
+        </p>
+        <p style="margin-bottom: 16px; color: var(--text-secondary); line-height: 1.6;">
+          Nossa missão é combater a burocracia, traduzindo o termos difíceis para uma linguagem simples e acessível a todos os cidadãos.
+        </p>
+        <div class="modal-note">
+          As informações do VozPública são de caráter educativo. Para decisões oficiais importantes, utilize os canais oficiais do governo.
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- APP LAYOUT -->
   <div class="app-layout" role="main">
 
@@ -146,7 +167,7 @@
     <nav class="sidebar" id="sidebar" role="navigation" aria-label="Navegação do aplicativo">
       <div class="sidebar-header">
         <p class="sidebar-label">Conversas</p>
-        <button class="new-chat-btn" id="newChatBtn" aria-label="Iniciar nova conversa">
+        <button type="button" class="new-chat-btn" id="newChatBtn" aria-label="Iniciar nova conversa">
           ✨ Nova Conversa
         </button>
       </div>
@@ -215,9 +236,6 @@
           <button class="access-control-btn" onclick="setLanguage('simples')">
             📖 Linguagem Simples
           </button>
-        </div>
-        <div class="powered-by">
-          Powered by <span class="pb-gemini">Gemini AI</span> · <span class="pb-eleven">ElevenLabs</span>
         </div>
       </div>
     </nav>
