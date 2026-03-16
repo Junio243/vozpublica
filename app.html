@@ -107,6 +107,14 @@
           <div class="setting-status" id="geminiStatus">❌ Não configurado — usando base local</div>
         </div>
         <div class="setting-group">
+          <label for="backendUrlInput" class="setting-label">🐍 Backend Python (opcional)<span class="setting-hint">Exemplo: http://127.0.0.1:8000</span></label>
+          <div class="setting-input-row">
+            <input type="text" id="backendUrlInput" class="setting-input" placeholder="URL do backend" autocomplete="off">
+            <button class="setting-save-btn" id="saveBackendUrl">Salvar</button>
+          </div>
+          <div class="setting-status" id="backendStatus">ℹ️ Backend não verificado</div>
+        </div>
+        <div class="setting-group">
           <label for="elevenLabsKeyInput" class="setting-label">🔊 ElevenLabs API Key<span class="setting-hint">Grátis em <a href="https://elevenlabs.io" target="_blank" rel="noopener">elevenlabs.io</a></span></label>
           <div class="setting-input-row">
             <input type="password" id="elevenLabsKeyInput" class="setting-input" placeholder="Cole sua chave aqui..." autocomplete="off">
@@ -114,7 +122,7 @@
           </div>
           <div class="setting-status" id="elevenLabsStatus">❌ Não configurado — usando voz do navegador</div>
         </div>
-        <div class="modal-note">🔒 Suas chaves ficam <strong>apenas no seu navegador</strong> e nunca são enviadas a servidores externos.</div>
+        <div class="modal-note">🔒 Você pode usar chaves locais no navegador ou configurar uma chave no backend Python para não expor credenciais no front-end.</div>
       </div>
     </div>
   </div>

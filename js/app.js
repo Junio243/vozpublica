@@ -894,11 +894,35 @@ function applyTheme() {
 function updateAPIStatus() {
   const gs = document.getElementById('geminiStatus');
   const es = document.getElementById('elevenLabsStatus');
+  const bs = document.getElementById('backendStatus');
   const badge = document.getElementById('aiStatus');
-  if (gs) gs.textContent = AI.hasGeminiKey() ? '✅ Conectado — IA Gemini ativa' : '❌ Não configurado — usando base local';
+  const st = AI.getStatus();
+
+  if (gs) {
+    if (st.serverGemini) {
+      gs.textContent = '✅ Backend Python ativo — chave Gemini no servidor';
+    } else if (st.localGemini) {
+      gs.textContent = '✅ Chave local ativa — Gemini no navegador';
+    } else {
+      gs.textContent = '❌ Não configurado — usando base local';
+    }
+  }
+
+  if (bs) {
+    if (st.backendOnline) {
+      bs.textContent = `✅ Backend online (${st.backendMode})`;
+    } else {
+      bs.textContent = '⚠️ Backend offline — usando modo navegador/base local';
+    }
+  }
+
   if (es) es.textContent = AI.hasElevenLabsKey() ? '✅ Conectado — Voz ElevenLabs ativa' : '❌ Não configurado — voz do navegador';
-  if (aiStatusText) aiStatusText.textContent = AI.hasGeminiKey() ? 'Gemini AI' : 'Base Local';
-  badge?.classList.toggle('ai-active', AI.hasGeminiKey());
+  if (aiStatusText) {
+    if (st.serverGemini) aiStatusText.textContent = 'Backend IA';
+    else if (st.localGemini) aiStatusText.textContent = 'Gemini AI';
+    else aiStatusText.textContent = 'Base Local';
+  }
+  badge?.classList.toggle('ai-active', !!st.gemini);
 }
 
 // ══════════════════════════════════════════════
@@ -1053,8 +1077,10 @@ document.addEventListener('DOMContentLoaded', () => {
     settingsModal.style.display = 'flex';
     const gInput = document.getElementById('geminiKeyInput');
     const eInput = document.getElementById('elevenLabsKeyInput');
-    if (AI.hasGeminiKey()) gInput.value = '••••••••••••';
+    const bInput = document.getElementById('backendUrlInput');
+    if (AI.hasLocalGeminiKey()) gInput.value = '••••••••••••';
     if (AI.hasElevenLabsKey()) eInput.value = '••••••••••••';
+    if (bInput) bInput.value = AI.getBackendURL();
     updateAPIStatus();
   });
   settingsClose?.addEventListener('click', () => { settingsModal.setAttribute('aria-hidden','true'); settingsModal.style.display='none'; });
@@ -1062,6 +1088,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('saveGeminiKey')?.addEventListener('click', () => {
     const val = document.getElementById('geminiKeyInput').value.trim();
     if (val && !val.startsWith('••')) { AI.setGeminiKey(val); }
+    updateAPIStatus();
+  });
+  document.getElementById('saveBackendUrl')?.addEventListener('click', async () => {
+    const val = document.getElementById('backendUrlInput').value.trim();
+    AI.setBackendURL(val);
+    await AI.probeBackend(true);
     updateAPIStatus();
   });
   document.getElementById('saveElevenLabsKey')?.addEventListener('click', () => {
@@ -1135,7 +1167,7 @@ document.addEventListener('DOMContentLoaded', () => {
   applyTheme();
   if (autoTTS) ttsToggle?.setAttribute('aria-checked', 'true');
   updateDashboard();
-  updateAPIStatus();
+  AI.init().finally(updateAPIStatus);
   setupVoiceInput();
   renderConversationList();
 });

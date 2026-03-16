@@ -47,16 +47,118 @@ Responda a mensagem do cidadão abaixo:`
         style: 0.3,
         use_speaker_boost: true
       }
+    },
+    backend: {
+      healthPath: '/api/health',
+      chatPath: '/api/chat',
+      analyzePath: '/api/analyze'
     }
   };
 
   // ── State ──
   let geminiKey = localStorage.getItem('vp_gemini_key') || '';
   let elevenLabsKey = localStorage.getItem('vp_elevenlabs_key') || '';
+  let backendUrl = (localStorage.getItem('vp_backend_url') || '').trim();
   let currentAudio = null;
+  let backendState = {
+    checked: false,
+    online: false,
+    hasServerGemini: false,
+    mode: 'unknown'
+  };
+
+  function defaultBackendUrl() {
+    if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+      return window.location.origin;
+    }
+    return 'http://127.0.0.1:8000';
+  }
+
+  if (!backendUrl) {
+    backendUrl = defaultBackendUrl();
+  }
+
+  async function fetchWithTimeout(url, options = {}, timeoutMs = 7000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function probeBackend(force = false) {
+    if (backendState.checked && !force) return backendState;
+
+    try {
+      const res = await fetchWithTimeout(
+        `${backendUrl}${CONFIG.backend.healthPath}`,
+        {
+          method: 'GET',
+          headers: { 'Cache-Control': 'no-store' }
+        },
+        3500
+      );
+
+      if (!res.ok) throw new Error(`health ${res.status}`);
+      const data = await res.json();
+
+      backendState = {
+        checked: true,
+        online: true,
+        hasServerGemini: !!data.has_server_gemini_key,
+        mode: data.mode || 'unknown'
+      };
+    } catch (err) {
+      backendState = {
+        checked: true,
+        online: false,
+        hasServerGemini: false,
+        mode: 'offline'
+      };
+    }
+
+    return backendState;
+  }
+
+  async function callBackend(path, payload) {
+    const state = await probeBackend();
+    if (!state.online) return null;
+
+    try {
+      const res = await fetchWithTimeout(
+        `${backendUrl}${path}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        },
+        40000
+      );
+
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (err) {
+      return null;
+    }
+  }
 
   // ── Gemini API ──
   async function chatWithGemini(message, history = []) {
+    const backendResponse = await callBackend(CONFIG.backend.chatPath, {
+      message,
+      history: history.slice(-6).map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'model',
+        text: (msg.text || '').replace(/<[^>]*>/g, '')
+      })),
+      apiKey: geminiKey || null
+    });
+
+    if (backendResponse?.text) {
+      return backendResponse.text;
+    }
+
     if (!geminiKey) return null;
 
     const contents = [];
@@ -117,6 +219,16 @@ Responda a mensagem do cidadão abaixo:`
 
   // ── Gemini Vision API (Document Analyzer) ──
   async function analyzeDocument(base64Image, mimeType = 'image/jpeg') {
+    const backendResponse = await callBackend(CONFIG.backend.analyzePath, {
+      imageBase64: base64Image,
+      mimeType,
+      apiKey: geminiKey || null
+    });
+
+    if (backendResponse?.text) {
+      return backendResponse.text;
+    }
+
     if (!geminiKey) return null;
 
     try {
@@ -255,19 +367,41 @@ Use HTML para formatar (<strong>, <ul>, <li>, <br>). Use emojis para facilitar a
     localStorage.setItem('vp_elevenlabs_key', key);
   }
 
-  function hasGeminiKey() { return !!geminiKey; }
+  function hasGeminiKey() { return !!geminiKey || !!backendState.hasServerGemini; }
+  function hasLocalGeminiKey() { return !!geminiKey; }
+  function hasServerGemini() { return !!backendState.hasServerGemini; }
   function hasElevenLabsKey() { return !!elevenLabsKey; }
+
+  function setBackendURL(url) {
+    backendUrl = (url || '').trim() || defaultBackendUrl();
+    localStorage.setItem('vp_backend_url', backendUrl);
+    backendState.checked = false;
+  }
+
+  function getBackendURL() {
+    return backendUrl;
+  }
+
+  async function init() {
+    await probeBackend(true);
+  }
 
   function getStatus() {
     return {
-      gemini: !!geminiKey,
+      gemini: !!geminiKey || !!backendState.hasServerGemini,
+      localGemini: !!geminiKey,
+      serverGemini: !!backendState.hasServerGemini,
       elevenlabs: !!elevenLabsKey,
-      browserTTS: 'speechSynthesis' in window
+      browserTTS: 'speechSynthesis' in window,
+      backendOnline: !!backendState.online,
+      backendMode: backendState.mode,
+      backendUrl
     };
   }
 
   // ── Public API ──
   return {
+    init,
     chat: chatWithGemini,
     analyzeDocument,
     speak,
@@ -275,8 +409,13 @@ Use HTML para formatar (<strong>, <ul>, <li>, <br>). Use emojis para facilitar a
     isSpeaking,
     setGeminiKey,
     setElevenLabsKey,
+    setBackendURL,
+    getBackendURL,
     hasGeminiKey,
+    hasLocalGeminiKey,
+    hasServerGemini,
     hasElevenLabsKey,
+    probeBackend,
     getStatus
   };
 })();

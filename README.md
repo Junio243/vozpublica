@@ -52,6 +52,7 @@ In Brazil, **70+ million citizens** struggle to access basic public services and
 | Layer | Technology |
 |---|---|
 | **Frontend** | HTML5, CSS3 (Vanilla), JavaScript ES6+ |
+| **Backend (optional)** | Python + FastAPI |
 | **AI Engine** | Google Gemini 2.0 Flash API |
 | **Text-to-Speech** | ElevenLabs Multilingual v2 |
 | **Document Analysis** | Gemini Vision API |
@@ -88,11 +89,33 @@ Projeto/
 2. Click **"Testar Gratuitamente"** to access the chatbot
 3. Start asking about your rights! 🎉
 
+### Python Backend (recommended)
+Use this mode to keep your Gemini key on the server side instead of exposing it in the browser.
+
+1. Install dependencies:
+	```bash
+	pip install -r requirements.txt
+	```
+2. Create your environment file:
+	```bash
+	cp .env.example .env
+	```
+3. Set `GEMINI_API_KEY` inside `.env`
+4. Start the backend:
+	```bash
+	uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+	```
+5. Open `http://localhost:8000`
+
+With the backend running, the frontend auto-detects it and routes chat/document analysis through `/api/*`.
+
 ### With AI Features
 1. Get a **Gemini API key** (free) at [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
 2. Get an **ElevenLabs API key** (free tier) at [elevenlabs.io](https://elevenlabs.io)
 3. Open the app and click **⚙️ Config** to enter your keys
 4. Keys are stored **only in your browser** (localStorage) — never sent to external servers
+
+> If Python backend is enabled with `GEMINI_API_KEY`, you can use Gemini without storing key in the browser.
 
 ## 🏗️ Features
 
