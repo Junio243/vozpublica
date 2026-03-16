@@ -33,6 +33,9 @@
       <button class="topbar-btn" id="accessibilityToggle" aria-label="Abrir painel de acessibilidade" aria-expanded="false">
         ♿ Acessibilidade
       </button>
+      <button class="topbar-btn" id="guideBtn" aria-label="Abrir Guia do Usuário">
+        📘 Guia
+      </button>
       <button class="topbar-btn" id="settingsBtn" aria-label="Configurações de API">
         ⚙️ Config
       </button>
@@ -102,6 +105,40 @@
     </div>
   </div>
 
+  <!-- USER GUIDE MODAL -->
+  <div class="modal-overlay" id="guideModal" aria-hidden="true">
+    <div class="modal guide-modal" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+      <div class="modal-header">
+        <h2 id="guideTitle" class="modal-title">📘 Guia Rápido</h2>
+        <button class="modal-close" id="guideClose" aria-label="Fechar">&times;</button>
+      </div>
+      <div class="modal-body guide-body">
+        <div class="guide-grid">
+          <div class="guide-card">
+            <div class="guide-step">Passo 1</div>
+            <h3 class="guide-card-title">Faça sua Pergunta</h3>
+            <p class="guide-card-desc">Digite ou fale sua dúvida na barra inferior. A Inteligência Artificial responderá em linguagem simples.</p>
+          </div>
+          <div class="guide-card">
+            <div class="guide-step">Passo 2</div>
+            <h3 class="guide-card-title">Análise de Documentos</h3>
+            <p class="guide-card-desc">Precisa entender uma carta oficial ou ofício? Clique em "Analisar Documento" e envie uma foto.</p>
+          </div>
+          <div class="guide-card">
+            <div class="guide-step">Passo 3</div>
+            <h3 class="guide-card-title">Use Atalhos</h3>
+            <p class="guide-card-desc">Pressione <kbd>Ctrl</kbd> + <kbd>K</kbd> (ou <kbd>Cmd</kbd> + <kbd>K</kbd>) para buscar por categorias rapidamente.</p>
+          </div>
+          <div class="guide-card">
+            <div class="guide-step">Dica</div>
+            <h3 class="guide-card-title">Acessibilidade Ativa</h3>
+            <p class="guide-card-desc">Se precisar, ative a Leitura Automática ou o Alto Contraste no painel de Acessibilidade no topo.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- APP LAYOUT -->
   <div class="app-layout" role="main">
 
@@ -113,8 +150,17 @@
           ✨ Nova Conversa
         </button>
       </div>
+      
+      <div class="sidebar-search">
+        <div class="search-wrapper">
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="topicSearchInput" class="search-input" placeholder="Buscar categoria...">
+          <div class="search-shortcut"><kbd>⌘</kbd><kbd>K</kbd></div>
+        </div>
+      </div>
+
       <div class="topics-section">
-        <div class="topic-group">
+        <div class="topic-group" id="topicGroupList">
           <p class="topic-group-title">Categorias</p>
           <button class="topic-btn" onclick="startTopic('inss')">
             <span class="topic-icon" aria-hidden="true">🏛️</span> INSS &amp; Previdência

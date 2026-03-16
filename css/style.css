@@ -38,7 +38,7 @@
 
   --shadow-teal: 0 0 40px rgba(62,207,178,0.15);
   --shadow-purple: 0 0 40px rgba(124,58,237,0.2);
-  --shadow-card: 0 8px 32px rgba(0,0,0,0.4);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.5);
 
   --font-main: 'Plus Jakarta Sans', 'Inter', sans-serif;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -58,7 +58,7 @@
   --text-muted: #64748b;
 
   --gradient-hero: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 40%, #f1f5f9 100%);
-  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 8px 32px rgba(31, 38, 135, 0.1);
 }
 
 /* ── Reset ── */

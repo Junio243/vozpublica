@@ -193,6 +193,11 @@ const docPreview = document.getElementById('docPreview');
 const docPreviewImg = document.getElementById('docPreviewImg');
 const aiStatusText = document.getElementById('aiStatusText');
 const themeToggleBtn = document.getElementById('themeToggleBtn');
+const guideModal = document.getElementById('guideModal');
+const guideBtn = document.getElementById('guideBtn');
+const guideClose = document.getElementById('guideClose');
+const topicSearchInput = document.getElementById('topicSearchInput');
+const topicBtns = document.querySelectorAll('#topicGroupList .topic-btn');
 
 // ══════════════════════════════════════════════
 // INTENT DETECTION — Local KB fallback
@@ -737,6 +742,46 @@ document.addEventListener('DOMContentLoaded', () => {
     if (val && !val.startsWith('••')) { AI.setElevenLabsKey(val); }
     updateAPIStatus();
   });
+
+  // User Guide Modal
+  if (guideBtn && guideModal && guideClose) {
+    guideBtn.addEventListener('click', () => {
+      guideModal.setAttribute('aria-hidden', 'false');
+      guideModal.style.display = 'flex';
+    });
+    guideClose.addEventListener('click', () => {
+      guideModal.setAttribute('aria-hidden', 'true');
+      guideModal.style.display = 'none';
+    });
+    guideModal.addEventListener('click', (e) => {
+      if (e.target === guideModal) {
+        guideModal.setAttribute('aria-hidden', 'true');
+        guideModal.style.display = 'none';
+      }
+    });
+  }
+
+  // Topic Search & Shortcut
+  if (topicSearchInput) {
+    topicSearchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      topicBtns.forEach(btn => {
+        const text = btn.textContent.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (text.includes(query)) {
+          btn.style.display = 'flex';
+        } else {
+          btn.style.display = 'none';
+        }
+      });
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        topicSearchInput.focus();
+      }
+    });
+  }
 
   // Document upload
   dropZone.addEventListener('click', () => docFileInput.click());
