@@ -57,14 +57,15 @@ const GeoService = (() => {
 
   // ── Buscar unidades próximas via Overpass API ──
   async function findNearbyFacilities(lat, lon, radiusMeters = 6000) {
+    // CORREÇÃO: Removido o til (~) antes de "name" para evitar full table scan nas chaves
     const query = `
       [out:json][timeout:25];
       (
-        node["office"="government"][~"name"~"CRAS|CREAS|Centro de Referência",i](around:${radiusMeters},${lat},${lon});
-        node["amenity"="social_facility"][~"name"~"CRAS|CREAS",i](around:${radiusMeters},${lat},${lon});
-        node["amenity"="clinic"][~"name"~"UBS|Unidade Básica|Posto de Saúde|Centro de Saúde",i](around:${radiusMeters},${lat},${lon});
-        node["healthcare"="centre"][~"name"~"UBS|Unidade Básica|Posto de Saúde",i](around:${radiusMeters},${lat},${lon});
-        node["amenity"="doctors"][~"name"~"UBS|Unidade Básica",i](around:${radiusMeters},${lat},${lon});
+        node["office"="government"]["name"~"CRAS|CREAS|Centro de Referência",i](around:${radiusMeters},${lat},${lon});
+        node["amenity"="social_facility"]["name"~"CRAS|CREAS",i](around:${radiusMeters},${lat},${lon});
+        node["amenity"="clinic"]["name"~"UBS|Unidade Básica|Posto de Saúde|Centro de Saúde",i](around:${radiusMeters},${lat},${lon});
+        node["healthcare"="centre"]["name"~"UBS|Unidade Básica|Posto de Saúde",i](around:${radiusMeters},${lat},${lon});
+        node["amenity"="doctors"]["name"~"UBS|Unidade Básica",i](around:${radiusMeters},${lat},${lon});
         node["amenity"="hospital"](around:${radiusMeters},${lat},${lon});
         node["amenity"="pharmacy"]["dispensing"="yes"](around:2000,${lat},${lon});
         node["amenity"="social_facility"]["social_facility"="outreach"](around:${radiusMeters},${lat},${lon});
@@ -79,7 +80,7 @@ const GeoService = (() => {
         body: 'data=' + encodeURIComponent(query)
       });
 
-      if (!res.ok) throw new Error('Overpass API indisponível');
+      if (!res.ok) throw new Error(`Overpass API indisponível: Status ${res.status}`);
       const data = await res.json();
 
       const facilities = (data.elements || []).map(el => {
@@ -103,15 +104,17 @@ const GeoService = (() => {
           lon: el.lon,
           distance,
           distLabel: formatDistance(distance),
-          mapsLink: `https://www.google.com/maps/dir/?api=1&destination=${el.lat},${el.lon}`
+          // CORREÇÃO: Interpolação ajustada e URL oficial do Google Maps inserida
+          mapsLink: `https://www.google.com/maps/search/?api=1&query=${el.lat},${el.lon}`
         };
       })
         .filter(Boolean)
         .sort((a, b) => a.distance - b.distance)
-        .slice(0, 12); // máx 12 resultados
+        .slice(0, 12); 
 
       return facilities;
     } catch (err) {
+      console.error("GeoService [findNearbyFacilities] Error:", err);
       throw new Error('Não foi possível buscar unidades próximas. Verifique sua conexão.');
     }
   }
@@ -183,7 +186,7 @@ const GeoService = (() => {
 
   // ── Consulta de CEP via ViaCEP ──
   async function lookupCEP(cep) {
-    const cleaned = cep.replace(/\D/g, '');
+    const cleaned = String(cep).replace(/\D/g, ''); // Garantia de que tratará como string
     if (cleaned.length !== 8) return null;
     try {
       const res = await fetch(`${VIACEP_URL}/${cleaned}/json/`);
@@ -207,7 +210,7 @@ const GeoService = (() => {
 
   // ── Detectar CEP em texto ──
   function extractCEP(text) {
-    const match = text.match(/\b\d{5}-?\d{3}\b/);
+    const match = String(text).match(/\b\d{5}-?\d{3}\b/);
     return match ? match[0] : null;
   }
 
