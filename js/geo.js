@@ -57,9 +57,8 @@ const GeoService = (() => {
   }
 
   // ── Buscar unidades próximas via Overpass API ──
-  // FIX: Query ampliada para incluir nós sem filtro de nome, cobrindo a maioria dos
-  //      CRAS/UBS brasileiros que não têm tags padronizadas no OpenStreetMap.
-  //      Também adicionado tratamento explícito de rate limit (429/504).
+  // FIX: Query ampliada para cobrir CRAS/UBS sem tags padronizadas no OSM brasileiro.
+  //      Adicionado suporte a 'way' elements e tratamento de rate limit (429/504).
   async function findNearbyFacilities(lat, lon, radiusMeters = 6000) {
     const query = `
       [out:json][timeout:30];
@@ -100,12 +99,12 @@ const GeoService = (() => {
         const name = tags.name || tags['name:pt'] || '';
         if (!name) return null;
 
-        // Elimina duplicatas pelo nome + coordenada aproximada
+        // Elimina duplicatas pelo prefixo do nome
         const key = name.toLowerCase().slice(0, 20);
         if (seen.has(key)) return null;
         seen.add(key);
 
-        // way elements têm center em vez de lat/lon direto
+        // 'way' elements têm coordenadas em el.center; 'node' têm direto em el.lat/el.lon
         const elLat = el.lat ?? el.center?.lat;
         const elLon = el.lon ?? el.center?.lon;
         if (!elLat || !elLon) return null;
