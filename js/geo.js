@@ -38,10 +38,11 @@ const GeoService = (() => {
   }
 
   // ── Geocodificação reversa (cidade/bairro) ──
+  // FIX: Removido header 'User-Agent' que é proibido em requisições fetch do browser (CORS)
   async function reverseGeocode(lat, lon) {
     try {
       const url = `${NOMINATIM_URL}/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1&accept-language=pt-BR`;
-      const res = await fetch(url, { headers: { 'User-Agent': 'VozPublica/1.0' } });
+      const res = await fetch(url, { headers: { 'Accept-Language': 'pt-BR' } });
       const data = await res.json();
       const addr = data.address || {};
       return {
@@ -56,21 +57,28 @@ const GeoService = (() => {
   }
 
   // ── Buscar unidades próximas via Overpass API ──
+  // FIX: Query ampliada para incluir nós sem filtro de nome, cobrindo a maioria dos
+  //      CRAS/UBS brasileiros que não têm tags padronizadas no OpenStreetMap.
+  //      Também adicionado tratamento explícito de rate limit (429/504).
   async function findNearbyFacilities(lat, lon, radiusMeters = 6000) {
-    // CORREÇÃO: Removido o til (~) antes de "name" para evitar full table scan nas chaves
     const query = `
-      [out:json][timeout:25];
+      [out:json][timeout:30];
       (
-        node["office"="government"]["name"~"CRAS|CREAS|Centro de Referência",i](around:${radiusMeters},${lat},${lon});
-        node["amenity"="social_facility"]["name"~"CRAS|CREAS",i](around:${radiusMeters},${lat},${lon});
+        node["amenity"="social_facility"](around:${radiusMeters},${lat},${lon});
+        node["amenity"="social_facility"]["social_facility"="outreach"](around:${radiusMeters},${lat},${lon});
+        node["office"="government"]["name"~"CRAS|CREAS|Centro de Referência|Assistência Social",i](around:${radiusMeters},${lat},${lon});
+        node["office"="government"](around:${radiusMeters},${lat},${lon});
+        node["amenity"="clinic"](around:${radiusMeters},${lat},${lon});
         node["amenity"="clinic"]["name"~"UBS|Unidade Básica|Posto de Saúde|Centro de Saúde",i](around:${radiusMeters},${lat},${lon});
-        node["healthcare"="centre"]["name"~"UBS|Unidade Básica|Posto de Saúde",i](around:${radiusMeters},${lat},${lon});
+        node["healthcare"="centre"](around:${radiusMeters},${lat},${lon});
         node["amenity"="doctors"]["name"~"UBS|Unidade Básica",i](around:${radiusMeters},${lat},${lon});
         node["amenity"="hospital"](around:${radiusMeters},${lat},${lon});
         node["amenity"="pharmacy"]["dispensing"="yes"](around:2000,${lat},${lon});
-        node["amenity"="social_facility"]["social_facility"="outreach"](around:${radiusMeters},${lat},${lon});
+        way["amenity"="hospital"](around:${radiusMeters},${lat},${lon});
+        way["amenity"="social_facility"](around:${radiusMeters},${lat},${lon});
+        way["healthcare"="centre"](around:${radiusMeters},${lat},${lon});
       );
-      out body;
+      out center body;
     `;
 
     try {
@@ -80,16 +88,30 @@ const GeoService = (() => {
         body: 'data=' + encodeURIComponent(query)
       });
 
+      if (res.status === 429 || res.status === 504) {
+        throw new Error('rate_limit');
+      }
       if (!res.ok) throw new Error(`Overpass API indisponível: Status ${res.status}`);
       const data = await res.json();
 
+      const seen = new Set();
       const facilities = (data.elements || []).map(el => {
         const tags = el.tags || {};
         const name = tags.name || tags['name:pt'] || '';
         if (!name) return null;
 
-        const distance = calcDistance(lat, lon, el.lat, el.lon);
-        const type = detectType(name, tags.amenity, tags.office, tags['social_facility']);
+        // Elimina duplicatas pelo nome + coordenada aproximada
+        const key = name.toLowerCase().slice(0, 20);
+        if (seen.has(key)) return null;
+        seen.add(key);
+
+        // way elements têm center em vez de lat/lon direto
+        const elLat = el.lat ?? el.center?.lat;
+        const elLon = el.lon ?? el.center?.lon;
+        if (!elLat || !elLon) return null;
+
+        const distance = calcDistance(lat, lon, elLat, elLon);
+        const type = detectType(name, tags.amenity, tags.office, tags['social_facility'], tags['healthcare']);
 
         return {
           id: el.id,
@@ -100,27 +122,29 @@ const GeoService = (() => {
           address: buildAddress(tags),
           phone: tags.phone || tags['contact:phone'] || tags['phone:br'] || null,
           website: tags.website || tags['contact:website'] || null,
-          lat: el.lat,
-          lon: el.lon,
+          lat: elLat,
+          lon: elLon,
           distance,
           distLabel: formatDistance(distance),
-          // CORREÇÃO: Interpolação ajustada e URL oficial do Google Maps inserida
-          mapsLink: `https://www.google.com/maps/search/?api=1&query=${el.lat},${el.lon}`
+          mapsLink: `https://www.google.com/maps/search/?api=1&query=${elLat},${elLon}`
         };
       })
         .filter(Boolean)
         .sort((a, b) => a.distance - b.distance)
-        .slice(0, 12); 
+        .slice(0, 15);
 
       return facilities;
     } catch (err) {
-      console.error("GeoService [findNearbyFacilities] Error:", err);
+      console.error('GeoService [findNearbyFacilities] Error:', err);
+      if (err.message === 'rate_limit') {
+        throw new Error('Serviço temporariamente sobrecarregado. Aguarde 30 segundos e tente novamente.');
+      }
       throw new Error('Não foi possível buscar unidades próximas. Verifique sua conexão.');
     }
   }
 
   // ── Detectar tipo da unidade ──
-  function detectType(name, amenity, office, socialFacility) {
+  function detectType(name, amenity, office, socialFacility, healthcare) {
     const n = name.toLowerCase();
     if (n.includes('creas')) return 'CREAS';
     if (n.includes('cras')) return 'CRAS';
@@ -129,8 +153,9 @@ const GeoService = (() => {
     if (n.includes('ubs') || n.includes('unidade básica') || n.includes('posto de saúde') || n.includes('centro de saúde')) return 'UBS';
     if (amenity === 'hospital') return 'Hospital';
     if (amenity === 'pharmacy') return 'Farmácia Popular';
-    if (amenity === 'clinic') return 'Clínica';
-    if (office === 'government' || socialFacility) return 'Serviço Social';
+    if (amenity === 'clinic' || healthcare === 'centre') return 'Clínica';
+    if (n.includes('assist') || n.includes('social') || socialFacility) return 'Serviço Social';
+    if (office === 'government') return 'Serviço Público';
     return 'Serviço Público';
   }
 
@@ -186,7 +211,7 @@ const GeoService = (() => {
 
   // ── Consulta de CEP via ViaCEP ──
   async function lookupCEP(cep) {
-    const cleaned = String(cep).replace(/\D/g, ''); // Garantia de que tratará como string
+    const cleaned = String(cep).replace(/\D/g, '');
     if (cleaned.length !== 8) return null;
     try {
       const res = await fetch(`${VIACEP_URL}/${cleaned}/json/`);
