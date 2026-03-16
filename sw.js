@@ -1,9 +1,4 @@
-/* ==========================================
-   VozPública — Service Worker
-   Offline-first PWA support
-   ========================================== */
-
-const CACHE_NAME = 'vozpublica-v1';
+const CACHE_NAME = 'vozpublica-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -14,66 +9,62 @@ const ASSETS_TO_CACHE = [
   './js/app.js',
   './js/ai.js',
   './js/analyzer.js',
+  './js/geo.js',
   './assets/hero.png',
   './assets/logo.png',
   './manifest.json'
 ];
 
-// Install — cache all essential assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
   );
   self.skipWaiting();
 });
 
-// Activate — clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-      );
-    })
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    )
   );
   self.clients.claim();
 });
 
-// Fetch — cache-first for assets, network-first for API calls
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Network-first for API calls
-  if (url.hostname.includes('googleapis.com') || url.hostname.includes('elevenlabs.io')) {
+  // Network-first: APIs externas
+  const networkFirst = [
+    'googleapis.com', 'elevenlabs.io',
+    'overpass-api.de', 'nominatim.openstreetmap.org', 'viacep.com.br'
+  ];
+  if (networkFirst.some(h => url.hostname.includes(h))) {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return new Response(JSON.stringify({ error: 'offline' }), {
+      fetch(event.request).catch(() =>
+        new Response(JSON.stringify({ error: 'offline' }), {
           status: 503,
           headers: { 'Content-Type': 'application/json' }
-        });
-      })
+        })
+      )
     );
     return;
   }
 
-  // Cache-first for everything else
+  // Cache-first: assets locais
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request).then((response) => {
-        // Cache successful responses
+    caches.match(event.request).then((cached) =>
+      cached || fetch(event.request).then((response) => {
         if (response.status === 200) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         }
         return response;
       }).catch(() => {
-        // Offline fallback
         if (event.request.destination === 'document') {
           return caches.match('./app.html');
         }
-      });
-    })
+      })
+    )
   );
 });
