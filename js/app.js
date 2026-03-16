@@ -165,6 +165,7 @@ Programa de transferência de renda para famílias em situação de pobreza e ex
 let conversationHistory = [];
 let currentFontSize = parseInt(localStorage.getItem('vp_fontSize') || '100');
 let isHighContrast = localStorage.getItem('vp_contrast') === 'true';
+let isLightMode = localStorage.getItem('vp_theme') === 'light';
 let autoTTS = localStorage.getItem('vp_autoTTS') === 'true';
 let metrics = JSON.parse(localStorage.getItem('vp_metrics') || '{"queries":0,"topics":[],"docs":0}');
 let uploadedFile = null;
@@ -191,6 +192,7 @@ const docFileInput = document.getElementById('docFileInput');
 const docPreview = document.getElementById('docPreview');
 const docPreviewImg = document.getElementById('docPreviewImg');
 const aiStatusText = document.getElementById('aiStatusText');
+const themeToggleBtn = document.getElementById('themeToggleBtn');
 
 // ══════════════════════════════════════════════
 // INTENT DETECTION — Local KB fallback
@@ -540,6 +542,14 @@ function applyContrast() {
   localStorage.setItem('vp_contrast', isHighContrast);
 }
 
+function applyTheme() {
+  document.body.classList.toggle('light-mode', isLightMode);
+  if (themeToggleBtn) {
+    const icon = themeToggleBtn.querySelector('.theme-icon');
+    if (icon) icon.textContent = isLightMode ? '☀️' : '🌙';
+  }
+}
+
 // ══════════════════════════════════════════════
 // SETTINGS MODAL
 // ══════════════════════════════════════════════
@@ -685,6 +695,14 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('vp_autoTTS', autoTTS);
   });
 
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      isLightMode = !isLightMode;
+      localStorage.setItem('vp_theme', isLightMode ? 'light' : 'dark');
+      applyTheme();
+    });
+  }
+
   // Settings modal
   settingsBtn.addEventListener('click', () => {
     settingsModal.setAttribute('aria-hidden', 'false');
@@ -742,6 +760,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Apply saved settings
   applyFontSize();
   applyContrast();
+  applyTheme();
   if (autoTTS) ttsToggle.setAttribute('aria-checked', 'true');
   updateDashboard();
   updateAPIStatus();

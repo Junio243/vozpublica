@@ -163,5 +163,21 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 });
 
+// ── Theme Toggle ──
+const themeToggleBtn = document.getElementById('themeToggleBtn');
+const currentTheme = localStorage.getItem('vp_theme');
+if (currentTheme === 'light') {
+  document.body.classList.add('light-mode');
+  if (themeToggleBtn) themeToggleBtn.querySelector('.theme-icon').textContent = '☀️';
+}
+if (themeToggleBtn) {
+  themeToggleBtn.addEventListener('click', () => {
+    document.body.classList.toggle('light-mode');
+    const isLight = document.body.classList.contains('light-mode');
+    localStorage.setItem('vp_theme', isLight ? 'light' : 'dark');
+    themeToggleBtn.querySelector('.theme-icon').textContent = isLight ? '☀️' : '🌙';
+  });
+}
+
 // ── Expose to global scope for inline onclick ──
 window.simulateChat = simulateChat;

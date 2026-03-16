@@ -36,6 +36,23 @@
   --font: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
 
+/* ── Light Mode Variables ── */
+.light-mode {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-glass: rgba(255, 255, 255, 0.6);
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-active: rgba(62, 207, 178, 0.5);
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-tertiary: #64748b;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,0.1);
+}
+
 /* ── Reset ── */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html { font-size: 100%; scroll-behavior: smooth; }
@@ -88,6 +105,18 @@ ul { list-style: none; padding-left: 0; }
 }
 .topbar-logo span { color: var(--accent); }
 .topbar-logo:hover { text-decoration: none; opacity: 0.9; }
+
+.logo-icon.logo-clean {
+  background: none;
+  box-shadow: none;
+  padding: 0;
+}
+.logo-img-sm {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 6px;
+}
 .topbar-divider {
   width: 1px; height: 24px;
   background: var(--border-subtle);
