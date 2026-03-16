@@ -9,8 +9,6 @@
 'use strict';
 
 // ══════════════════════════════════════════════
-// KNOWLEDGE BASE — Fallback offline / sem chave
-// ══════════════════════════════════════════════
 const KB = {
   inss: {
     title: '🏛️ INSS & Aposentadoria',
@@ -115,7 +113,7 @@ Transferência de renda para famílias em situação de pobreza e extrema pobrez
   <li>🔸 <strong>FAIXA 1:</strong> Renda até R$ 2.640 — maior subsídio, parcelas a partir de R$ 80</li>
   <li>🔸 <strong>Aluguel Social:</strong> Auxílio para famílias vulneráveis — procure o CRAS</li>
 </ul><br>
-<strong>🔒 Direitos do inquilino:</strong><br>
+<strong>🔒 Direitos do inquílino:</strong><br>
 <ul>
   <li>✅ Não pode ser despejado sem aviso prévio de 30 dias</li>
   <li>✅ Reajuste anual limitado ao índice do contrato (IGPM ou IPCA)</li>
@@ -150,14 +148,12 @@ Transferência de renda para famílias em situação de pobreza e extrema pobrez
   <li>🔸 <strong>Isenção de IPTU:</strong> Em muitos municípios — consulte a prefeitura</li>
   <li>🔸 <strong>Desconto em medicamentos:</strong> Farmácia Popular e programas municipais</li>
 </ul><br>
-<strong>📞 Denuncie maus-tratos:</strong> <strong>Disque 100</strong> (24h, gratuito)`,
+<strong>📞 Denûncia maus-tratos:</strong> <strong>Disque 100</strong> (24h, gratuito)`,
     chips: ['INSS', 'Saúde Pública', 'Documentos'],
     sources: ['Disque 100', 'Estatuto do Idoso — Lei 10.741/2003']
   }
 };
 
-// ══════════════════════════════════════════════
-// CONVERSATION STORE — persistência em localStorage
 // ══════════════════════════════════════════════
 const ConversationStore = (() => {
   const KEY = 'vp_conversations_v2';
@@ -177,7 +173,6 @@ const ConversationStore = (() => {
       if (list.length > MAX) list.splice(MAX);
     }
     try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) {
-      // localStorage cheio: remove as mais antigas
       list.splice(MAX / 2);
       localStorage.setItem(KEY, JSON.stringify(list));
     }
@@ -194,7 +189,7 @@ const ConversationStore = (() => {
     return {
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
       title: 'Nova conversa',
-      messages: [],   // {role: 'user'|'ai', html: '', text: '', time: ''}
+      messages: [],
       chips: [],
       sources: [],
       createdAt: Date.now(),
@@ -208,20 +203,16 @@ const ConversationStore = (() => {
 })();
 
 // ══════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════
-let conversationHistory = [];      // Gemini history [{role, text}]
-let currentConv = null;            // Conversa atual (objeto)
+let conversationHistory = [];
+let currentConv = null;
 let currentFontSize = parseInt(localStorage.getItem('vp_fontSize') || '100');
 let isHighContrast = localStorage.getItem('vp_contrast') === 'true';
 let isLightMode = localStorage.getItem('vp_theme') === 'light';
 let autoTTS = localStorage.getItem('vp_autoTTS') === 'true';
 let metrics = JSON.parse(localStorage.getItem('vp_metrics') || '{"queries":0,"topics":{},"docs":0}');
 let uploadedFile = null;
-let _topicQueryCount = {};  // contagem de queries por tópico (runtime)
+let _topicQueryCount = {};
 
-// ══════════════════════════════════════════════
-// DOM REFERENCES
 // ══════════════════════════════════════════════
 const chatMessages = document.getElementById('chatMessages');
 const messageInput = document.getElementById('messageInput');
@@ -258,8 +249,6 @@ const sidebar = document.getElementById('sidebar');
 const sidebarToggle = document.getElementById('sidebarToggle');
 const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-// ══════════════════════════════════════════════
-// INTENT DETECTION
 // ══════════════════════════════════════════════
 function detectIntent(message) {
   const lower = message.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -315,8 +304,6 @@ function getFallbackResponse() {
 }
 
 // ══════════════════════════════════════════════
-// MESSAGE RENDERING
-// ══════════════════════════════════════════════
 function renderMessage(type, contentHTML, chips = [], sources = [], extraContent = '') {
   hideWelcome();
 
@@ -368,7 +355,6 @@ function renderMessage(type, contentHTML, chips = [], sources = [], extraContent
     setTimeout(() => speakMessage(msg.querySelector('.msg-tts-btn')), 600);
   }
 
-  // Salvar na conversa atual
   if (currentConv) {
     currentConv.messages.push({
       role: type,
@@ -409,8 +395,6 @@ function removeTypingIndicator() {
 }
 
 // ══════════════════════════════════════════════
-// CEP DETECTION & AUTO-LOOKUP
-// ══════════════════════════════════════════════
 async function handleCEPinMessage(text) {
   if (!window.GeoService) return null;
   const cep = GeoService.extractCEP(text);
@@ -430,22 +414,18 @@ async function handleCEPinMessage(text) {
     <strong>📮 CEP Encontrado</strong><br>
     ${parts.join('<br>')}
     <br><br>
-    <button class="msg-chip" onclick="openGeoModalWithCEP('${cep}')">📍 Ver CRAS/UBS nesta região</button>
+    <button class="msg-chip" onclick="openGeoModalWithCEP('${cep}')">&#128205; Ver CRAS/UBS nesta região</button>
   </div>`;
 }
 
 // ══════════════════════════════════════════════
-// MESSAGE PROCESSING
-// ══════════════════════════════════════════════
 async function processMessage(userText) {
   if (!userText.trim()) return;
 
-  // Inicializa conversa se não existir
   if (!currentConv) {
     currentConv = ConversationStore.create();
   }
 
-  // Atualiza título da conversa com o primeiro user message
   if (currentConv.messages.length === 0 || currentConv.title === 'Nova conversa') {
     currentConv.title = userText.slice(0, 45).trim() + (userText.length > 45 ? '…' : '');
   }
@@ -453,16 +433,13 @@ async function processMessage(userText) {
   renderMessage('user', escapeHTML(userText));
   conversationHistory.push({ role: 'user', text: userText });
 
-  // Métricas
   metrics.queries++;
   saveMetrics();
 
   showTypingIndicator();
 
-  // Detectar CEP em background (sem bloquear fluxo)
   const cepPromise = handleCEPinMessage(userText);
 
-  // Saudações rápidas
   const lower = userText.toLowerCase();
   const isGreeting = ['oi','ola','olá','bom dia','boa tarde','boa noite','hello','salve','oi!','olá!'].some(g => lower.includes(g)) && userText.length < 30;
 
@@ -475,7 +452,6 @@ async function processMessage(userText) {
     return;
   }
 
-  // Tentar Gemini AI
   if (AI.hasGeminiKey()) {
     try {
       const aiResponse = await AI.chat(userText, conversationHistory);
@@ -491,7 +467,6 @@ async function processMessage(userText) {
     }
   }
 
-  // Fallback: Knowledge Base local
   await delay(1100 + Math.random() * 700);
   removeTypingIndicator();
 
@@ -499,7 +474,6 @@ async function processMessage(userText) {
   const kbResult = detectIntent(userText);
 
   if (kbResult) {
-    // Atualizar métricas de tópicos
     metrics.topics[kbResult.key] = (metrics.topics[kbResult.key] || 0) + 1;
     saveMetrics();
     renderMessage('ai', kbResult.text, kbResult.chips, kbResult.sources, cepExtra || '');
@@ -512,13 +486,10 @@ async function processMessage(userText) {
 }
 
 // ══════════════════════════════════════════════
-// CONVERSATION HISTORY UI
-// ══════════════════════════════════════════════
 function renderConversationList() {
   const list = ConversationStore.getAll();
   convEmpty.style.display = list.length === 0 ? 'block' : 'none';
 
-  // Limpa items existentes (exceto convEmpty)
   Array.from(convList.querySelectorAll('.conv-item')).forEach(el => el.remove());
 
   list.forEach(conv => {
@@ -555,12 +526,10 @@ function loadConversation(id) {
   currentConv = conv;
   conversationHistory = [];
 
-  // Limpa chat
   Array.from(chatMessages.querySelectorAll('.message')).forEach(el => el.remove());
   if (welcomeScreen) welcomeScreen.style.display = 'none';
   if (docAnalyzer) docAnalyzer.style.display = 'none';
 
-  // Re-renderiza mensagens (sem salvar de novo)
   conv.messages.forEach(msg => {
     const el = document.createElement('div');
     el.className = `message ${msg.role}`;
@@ -577,7 +546,6 @@ function loadConversation(id) {
       </div>`;
     chatMessages.appendChild(el);
 
-    // Reconstrói history para Gemini
     conversationHistory.push({ role: msg.role === 'ai' ? 'model' : 'user', text: msg.text || '' });
   });
 
@@ -612,8 +580,6 @@ function startNewChat() {
   renderConversationList();
 }
 
-// ══════════════════════════════════════════════
-// GEOLOCATION MODAL
 // ══════════════════════════════════════════════
 const geoModal = document.getElementById('geoModal');
 const geoClose = document.getElementById('geoClose');
@@ -663,6 +629,9 @@ async function searchByGeolocation() {
   }
 }
 
+// FIX: Removido header 'User-Agent' do fetch para o Nominatim.
+// 'User-Agent' é um 'forbidden header name' na Fetch API do browser e causava falha
+// silenciosa na geocodificação por CEP. Mantido apenas 'Accept-Language'.
 async function searchByCEP(cepValue) {
   if (!window.GeoService) return;
   const cep = (cepValue || document.getElementById('geoCepInput').value).replace(/\D/g, '');
@@ -680,10 +649,9 @@ async function searchByCEP(cepValue) {
 
     document.getElementById('geoLoadingText').textContent = 'Buscando unidades próximas...';
 
-    // Geocodificar o CEP para obter coordenadas
     const geoRes = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(data.logradouro + ', ' + data.cidade + ', ' + data.estado + ', Brasil')}&format=json&limit=1`,
-      { headers: { 'User-Agent': 'VozPublica/1.0', 'Accept-Language': 'pt-BR' } }
+      { headers: { 'Accept-Language': 'pt-BR' } }
     );
     const geoData = await geoRes.json();
     if (!geoData.length) {
@@ -745,8 +713,6 @@ function renderFacilityList(filter) {
 }
 
 // ══════════════════════════════════════════════
-// TTS
-// ══════════════════════════════════════════════
 async function speakMessage(btn) {
   if (!btn) return;
   const msgContent = btn.closest('.msg-body')?.querySelector('.msg-content');
@@ -773,8 +739,6 @@ async function speakMessage(btn) {
   await AI.speak(msgContent.textContent);
 }
 
-// ══════════════════════════════════════════════
-// DOCUMENT ANALYZER
 // ══════════════════════════════════════════════
 function toggleDocAnalyzer() {
   const vis = docAnalyzer.style.display !== 'none';
@@ -816,8 +780,6 @@ async function analyzeUploadedDoc() {
 }
 
 // ══════════════════════════════════════════════
-// TOPIC QUICK START
-// ══════════════════════════════════════════════
 function startTopic(topicKey) {
   const topic = KB[topicKey];
   if (!topic) return;
@@ -854,8 +816,6 @@ function handleChipClick(chipText) {
   }
 }
 
-// ══════════════════════════════════════════════
-// DASHBOARD
 // ══════════════════════════════════════════════
 const TOPIC_LABELS = {
   inss: '🏛️ INSS',
@@ -912,8 +872,6 @@ function updateDashboard() {
 }
 
 // ══════════════════════════════════════════════
-// ACCESSIBILITY
-// ══════════════════════════════════════════════
 function applyFontSize() {
   document.documentElement.style.fontSize = currentFontSize + '%';
   if (fontSizeLabel) fontSizeLabel.textContent = currentFontSize + '%';
@@ -933,8 +891,6 @@ function applyTheme() {
 }
 
 // ══════════════════════════════════════════════
-// SETTINGS
-// ══════════════════════════════════════════════
 function updateAPIStatus() {
   const gs = document.getElementById('geminiStatus');
   const es = document.getElementById('elevenLabsStatus');
@@ -945,8 +901,6 @@ function updateAPIStatus() {
   badge?.classList.toggle('ai-active', AI.hasGeminiKey());
 }
 
-// ══════════════════════════════════════════════
-// VOICE INPUT
 // ══════════════════════════════════════════════
 function setupVoiceInput() {
   const voiceBtn = document.getElementById('voiceMsgBtn');
@@ -987,8 +941,6 @@ function setupVoiceInput() {
 }
 
 // ══════════════════════════════════════════════
-// SIDEBAR MOBILE
-// ══════════════════════════════════════════════
 function openSidebar() {
   sidebar?.classList.add('open');
   sidebarOverlay?.classList.add('visible');
@@ -1000,8 +952,6 @@ function closeSidebar() {
   sidebarOverlay?.setAttribute('aria-hidden', 'true');
 }
 
-// ══════════════════════════════════════════════
-// UTILITIES
 // ══════════════════════════════════════════════
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 function escapeHTML(str) {
@@ -1019,11 +969,7 @@ function formatRelativeTime(ts) {
   return new Date(ts).toLocaleDateString('pt-BR');
 }
 
-// ══════════════════════════════════════════════
-// MIGRATE OLD METRICS FORMAT
-// ══════════════════════════════════════════════
 function migrateMetrics() {
-  // Old format had topics as array; new format as object
   if (Array.isArray(metrics.topics)) {
     const obj = {};
     metrics.topics.forEach(t => { obj[t] = (obj[t] || 0) + 1; });
@@ -1033,12 +979,9 @@ function migrateMetrics() {
 }
 
 // ══════════════════════════════════════════════
-// EVENT LISTENERS — DOMContentLoaded
-// ══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   migrateMetrics();
 
-  // ── Input ──
   messageInput.addEventListener('input', () => {
     sendBtn.disabled = !messageInput.value.trim();
     messageInput.style.height = 'auto';
@@ -1068,10 +1011,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ── New Chat ──
   newChatBtn.addEventListener('click', e => { e.preventDefault(); startNewChat(); });
 
-  // ── Clear History ──
   clearHistoryBtn?.addEventListener('click', () => {
     if (confirm('Apagar todo o histórico de conversas?')) {
       ConversationStore.clear();
@@ -1079,13 +1020,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ── Sidebar Mobile ──
   sidebarToggle?.addEventListener('click', () => {
     sidebar?.classList.contains('open') ? closeSidebar() : openSidebar();
   });
   sidebarOverlay?.addEventListener('click', closeSidebar);
 
-  // ── Accessibility panel ──
   accessibilityToggle?.addEventListener('click', () => {
     const isOpen = a11yPanel.getAttribute('aria-hidden') === 'false';
     a11yPanel.setAttribute('aria-hidden', isOpen ? 'true' : 'false');
@@ -1109,7 +1048,6 @@ document.addEventListener('DOMContentLoaded', () => {
     applyTheme();
   });
 
-  // ── Settings Modal ──
   settingsBtn?.addEventListener('click', () => {
     settingsModal.setAttribute('aria-hidden', 'false');
     settingsModal.style.display = 'flex';
@@ -1132,17 +1070,14 @@ document.addEventListener('DOMContentLoaded', () => {
     updateAPIStatus();
   });
 
-  // ── Guide Modal ──
   guideBtn?.addEventListener('click', () => { guideModal.setAttribute('aria-hidden','false'); guideModal.style.display='flex'; });
   guideClose?.addEventListener('click', () => { guideModal.setAttribute('aria-hidden','true'); guideModal.style.display='none'; });
   guideModal?.addEventListener('click', e => { if(e.target===guideModal){guideModal.setAttribute('aria-hidden','true');guideModal.style.display='none';} });
 
-  // ── About Modal ──
   aboutBtn?.addEventListener('click', () => { aboutModal.setAttribute('aria-hidden','false'); aboutModal.style.display='flex'; });
   aboutClose?.addEventListener('click', () => { aboutModal.setAttribute('aria-hidden','true'); aboutModal.style.display='none'; });
   aboutModal?.addEventListener('click', e => { if(e.target===aboutModal){aboutModal.setAttribute('aria-hidden','true');aboutModal.style.display='none';} });
 
-  // ── Geo Modal ──
   geoClose?.addEventListener('click', () => { geoModal.setAttribute('aria-hidden','true'); geoModal.style.display='none'; });
   geoModal?.addEventListener('click', e => { if(e.target===geoModal){geoModal.setAttribute('aria-hidden','true');geoModal.style.display='none';} });
   document.getElementById('geoSearchBtn')?.addEventListener('click', searchByGeolocation);
@@ -1152,7 +1087,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter') searchByCEP();
   });
 
-  // Geo filter buttons
   document.getElementById('geoFilterRow')?.addEventListener('click', e => {
     const btn = e.target.closest('.geo-filter-btn');
     if (!btn) return;
@@ -1161,7 +1095,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderFacilityList(btn.dataset.filter);
   });
 
-  // ── Topic Search + Shortcut ──
   topicSearchInput?.addEventListener('input', e => {
     const q = e.target.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
     topicBtns.forEach(btn => {
@@ -1187,7 +1120,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ── Document Upload ──
   dropZone?.addEventListener('click', () => docFileInput.click());
   dropZone?.addEventListener('keydown', e => { if (e.key === 'Enter') docFileInput.click(); });
   dropZone?.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-active'); });
@@ -1198,7 +1130,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   docFileInput?.addEventListener('change', e => { if (e.target.files.length) handleFileUpload(e.target.files[0]); });
 
-  // ── Apply saved settings ──
   applyFontSize();
   applyContrast();
   applyTheme();
@@ -1209,8 +1140,6 @@ document.addEventListener('DOMContentLoaded', () => {
   renderConversationList();
 });
 
-// ══════════════════════════════════════════════
-// FILE UPLOAD
 // ══════════════════════════════════════════════
 async function handleFileUpload(file) {
   const validation = DocAnalyzer.validateFile(file);
@@ -1229,8 +1158,6 @@ async function handleFileUpload(file) {
   }
 }
 
-// ══════════════════════════════════════════════
-// GLOBAL EXPORTS (onclick handlers in HTML)
 // ══════════════════════════════════════════════
 window.startTopic = startTopic;
 window.handleChipClick = handleChipClick;
