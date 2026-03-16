@@ -572,6 +572,7 @@ img { max-width: 100%; height: auto; }
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0;
   transition: transform 0.28s var(--ease);
 }
 .sidebar-header {
@@ -771,7 +772,6 @@ img { max-width: 100%; height: auto; }
   flex-direction: column;
   background: var(--bg-primary);
   min-height: 0;
-  overflow: hidden;
 }
 .chat-messages {
   flex: 1;
@@ -1035,6 +1035,7 @@ img { max-width: 100%; height: auto; }
   background: var(--bg-secondary);
   border-left: 1px solid var(--border-subtle);
   display: flex; flex-direction: column; overflow-y: auto;
+  min-height: 0;
 }
 .right-panel::-webkit-scrollbar { width: 4px; }
 .right-panel::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 2px; }
